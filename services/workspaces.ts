@@ -522,3 +522,12 @@ export async function deleteWorkspace(input: {
   }
   await prisma.workspace.delete({ where: { id: workspace.id } });
 }
+
+export async function getWorkspaceQuotaUsage(workspaceId: string, userId: string) {
+  const [memberCount, projectCount, userWorkspaceCount] = await Promise.all([
+    prisma.membership.count({ where: { workspaceId, status: "ACTIVE" } }),
+    prisma.project.count({ where: { workspaceId } }),
+    prisma.membership.count({ where: { userId, status: "ACTIVE" } }),
+  ]);
+  return { memberCount, projectCount, userWorkspaceCount };
+}

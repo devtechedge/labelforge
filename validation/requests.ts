@@ -89,6 +89,7 @@ export const assignmentSchema = z.object({
 export const reassignmentSchema = z.object({
   taskIds: z.array(idSchema).min(1).max(100),
   userId: idSchema,
+  fromUserId: idSchema.optional(),
 });
 
 export const draftSaveSchema = z.object({

@@ -1,6 +1,7 @@
 export const LIMITS = {
-  fileBytes: 10 * 1024 * 1024,
+  fileBytes: 4 * 1024 * 1024,
   recordsPerImport: 10_000,
+  recordsPerProject: 25_000,
   fieldsPerRecord: 60,
   fieldLength: 8_000,
   recordBytes: 64 * 1024,

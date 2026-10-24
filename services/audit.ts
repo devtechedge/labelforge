@@ -1,5 +1,6 @@
 import "server-only";
 
+import { prisma } from "@/lib/db";
 import type { Prisma } from "@/generated/prisma/client";
 
 type AuditWriter = {
@@ -31,4 +32,22 @@ export async function recordAudit(
       metadata: input.metadata,
     },
   });
+}
+
+export async function listAuditEvents(input: {
+  workspaceId: string;
+  page: number;
+  limit: number;
+}) {
+  const [events, total] = await Promise.all([
+    prisma.auditEvent.findMany({
+      where: { workspaceId: input.workspaceId },
+      orderBy: { createdAt: "desc" },
+      skip: (input.page - 1) * input.limit,
+      take: input.limit,
+      include: { actor: { select: { id: true, displayName: true } } },
+    }),
+    prisma.auditEvent.count({ where: { workspaceId: input.workspaceId } }),
+  ]);
+  return { events, total };
 }
