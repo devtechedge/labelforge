@@ -1,0 +1,536 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum WorkspaceRole {
+  OWNER
+  MANAGER
+  REVIEWER
+  ANNOTATOR
+}
+
+enum WorkspaceStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum MembershipStatus {
+  INVITED
+  ACTIVE
+  DISABLED
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+  EXPIRED
+}
+
+enum ProjectStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum AnnotationMode {
+  SINGLE
+  MULTI
+}
+
+enum FileFormat {
+  CSV
+  JSONL
+}
+
+enum ImportStatus {
+  PREVIEW_READY
+  COMMITTED
+  EXPIRED
+  FAILED
+}
+
+enum SchemaStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum TaskStatus {
+  UNASSIGNED
+  ASSIGNED
+  IN_PROGRESS
+  SUBMITTED
+  IN_REVIEW
+  ACCEPTED
+  RETURNED_FOR_CORRECTION
+  REJECTED
+  DISPUTED
+  ADJUDICATION
+  RESOLVED
+}
+
+enum AssignmentStatus {
+  ACTIVE
+  RELEASED
+  COMPLETED
+}
+
+enum AnnotationStatus {
+  DRAFT
+  SUBMITTED
+  ACCEPTED
+  RETURNED_FOR_CORRECTION
+  REJECTED
+  DISPUTED
+}
+
+enum ReviewDecision {
+  PASS
+  RETURN_FOR_CORRECTION
+  REJECT
+  REQUEST_ADJUDICATION
+}
+
+enum ReleaseStatus {
+  PUBLISHED
+}
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  passwordHash    String
+  displayName     String
+  disabledAt      DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  memberships        Membership[]
+  sessions           Session[]
+  invitationsSent    Invitation[]              @relation("InvitationInviter")
+  invitationsAccepted Invitation[]             @relation("InvitationAcceptedBy")
+  workspacesOwned    Workspace[]               @relation("WorkspaceOwner")
+  projectsCreated    Project[]
+  importsCreated     ImportBatch[]
+  datasetVersions    DatasetVersion[]
+  schemasCreated     AnnotationSchemaVersion[] @relation("SchemaCreator")
+  schemasPublished   AnnotationSchemaVersion[] @relation("SchemaPublisher")
+  assignments        TaskAssignment[]
+  assignmentsGiven   TaskAssignment[]          @relation("AssignmentCreator")
+  annotations        Annotation[]
+  reviews            Review[]
+  adjudications      Adjudication[]
+  releasesCreated    DatasetRelease[]
+  auditEvents        AuditEvent[]
+
+  @@index([disabledAt])
+}
+
+model Session {
+  id         String    @id @default(cuid())
+  tokenHash  String    @unique
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  lastSeenAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Workspace {
+  id        String          @id @default(cuid())
+  name      String
+  slug      String          @unique
+  ownerId   String
+  owner     User            @relation("WorkspaceOwner", fields: [ownerId], references: [id])
+  status    WorkspaceStatus @default(ACTIVE)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  memberships Membership[]
+  invitations Invitation[]
+  projects    Project[]
+  imports     ImportBatch[]
+  auditEvents AuditEvent[]
+
+  @@index([ownerId])
+}
+
+model Membership {
+  id          String           @id @default(cuid())
+  workspaceId String
+  workspace   Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roles       WorkspaceRole[]
+  status      MembershipStatus @default(ACTIVE)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@unique([workspaceId, userId])
+  @@index([userId, status])
+}
+
+model Invitation {
+  id            String           @id @default(cuid())
+  workspaceId   String
+  workspace     Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  email         String
+  roles         WorkspaceRole[]
+  tokenHash     String           @unique
+  status        InvitationStatus @default(PENDING)
+  expiresAt     DateTime
+  inviterId     String
+  inviter       User             @relation("InvitationInviter", fields: [inviterId], references: [id])
+  acceptedById  String?
+  acceptedBy    User?            @relation("InvitationAcceptedBy", fields: [acceptedById], references: [id], onDelete: SetNull)
+  acceptedAt    DateTime?
+  createdAt     DateTime         @default(now())
+
+  @@index([workspaceId, status])
+  @@index([email, status])
+  @@index([expiresAt])
+}
+
+model Project {
+  id                 String         @id @default(cuid())
+  workspaceId        String
+  workspace          Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  name               String
+  description        String
+  status             ProjectStatus  @default(ACTIVE)
+  annotationMode     AnnotationMode @default(SINGLE)
+  annotationsPerTask Int            @default(1)
+  createdById        String
+  createdBy          User           @relation(fields: [createdById], references: [id])
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  dataset         Dataset?
+  schemaVersions  AnnotationSchemaVersion[]
+  tasks           AnnotationTask[]
+  importBatches   ImportBatch[]
+  releases        DatasetRelease[]
+
+  @@unique([workspaceId, name])
+  @@index([workspaceId, status])
+}
+
+model Dataset {
+  id               String   @id @default(cuid())
+  projectId        String   @unique
+  project          Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name             String
+  currentVersionId String?  @unique
+  currentVersion   DatasetVersion? @relation("DatasetCurrentVersion", fields: [currentVersionId], references: [id], onDelete: SetNull)
+  createdAt        DateTime @default(now())
+
+  versions DatasetVersion[]
+}
+
+model DatasetVersion {
+  id              String     @id @default(cuid())
+  datasetId       String
+  dataset         Dataset    @relation(fields: [datasetId], references: [id], onDelete: Cascade)
+  versionNumber   Int
+  format          FileFormat
+  sourceFileName  String
+  sourceChecksum  String
+  contentChecksum String
+  recordCount     Int
+  importedById    String
+  importedBy      User       @relation(fields: [importedById], references: [id])
+  createdAt       DateTime   @default(now())
+
+  currentFor Dataset?           @relation("DatasetCurrentVersion")
+  records    DatasetRecord[]
+  tasks      AnnotationTask[]
+
+  @@unique([datasetId, versionNumber])
+  @@index([datasetId, createdAt])
+}
+
+model DatasetRecord {
+  id               String         @id @default(cuid())
+  datasetVersionId String
+  datasetVersion   DatasetVersion @relation(fields: [datasetVersionId], references: [id], onDelete: Cascade)
+  sourceId         String
+  sourceOrder      Int
+  data             Json
+  contentHash      String
+
+  tasks        AnnotationTask[]
+  releaseItems ReleaseItem[]
+
+  @@unique([datasetVersionId, sourceId])
+  @@index([datasetVersionId, sourceOrder])
+}
+
+model AnnotationSchemaVersion {
+  id            String       @id @default(cuid())
+  projectId     String
+  project       Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  versionNumber Int
+  schemaJson    Json
+  status        SchemaStatus @default(DRAFT)
+  createdById   String
+  createdBy     User         @relation("SchemaCreator", fields: [createdById], references: [id])
+  createdAt     DateTime     @default(now())
+  publishedAt   DateTime?
+  publishedById String?
+  publishedBy   User?        @relation("SchemaPublisher", fields: [publishedById], references: [id], onDelete: SetNull)
+
+  tasks         AnnotationTask[]
+  annotations   Annotation[]
+  adjudications Adjudication[]
+  releases      DatasetRelease[]
+
+  @@unique([projectId, versionNumber])
+  @@index([projectId, status])
+}
+
+model AnnotationTask {
+  id                  String         @id @default(cuid())
+  projectId           String
+  project             Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  datasetVersionId    String
+  datasetVersion      DatasetVersion @relation(fields: [datasetVersionId], references: [id], onDelete: Cascade)
+  datasetRecordId     String
+  datasetRecord       DatasetRecord  @relation(fields: [datasetRecordId], references: [id], onDelete: Cascade)
+  schemaVersionId     String
+  schemaVersion       AnnotationSchemaVersion @relation(fields: [schemaVersionId], references: [id])
+  status              TaskStatus     @default(UNASSIGNED)
+  version             Int            @default(0)
+  priority            Int            @default(0)
+  requiredAnnotations Int            @default(1)
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  assignments   TaskAssignment[]
+  annotations   Annotation[]
+  adjudications Adjudication[]
+  reviews       Review[]
+  releaseItems  ReleaseItem[]
+
+  @@unique([datasetRecordId, schemaVersionId])
+  @@index([projectId, status])
+  @@index([projectId, priority])
+  @@index([schemaVersionId])
+}
+
+model TaskAssignment {
+  id             String           @id @default(cuid())
+  taskId         String
+  task           AnnotationTask   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status         AssignmentStatus @default(ACTIVE)
+  assignedById   String
+  assignedBy     User             @relation("AssignmentCreator", fields: [assignedById], references: [id])
+  exclusiveSlot  String?          @unique
+  createdAt      DateTime         @default(now())
+  endedAt        DateTime?
+
+  @@index([taskId, status])
+  @@index([userId, status])
+}
+
+model Annotation {
+  id             String           @id @default(cuid())
+  taskId         String
+  task           AnnotationTask   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  annotatorId    String
+  annotator      User             @relation(fields: [annotatorId], references: [id])
+  schemaVersionId String
+  schemaVersion  AnnotationSchemaVersion @relation(fields: [schemaVersionId], references: [id])
+  answer         Json
+  status         AnnotationStatus @default(DRAFT)
+  revision       Int              @default(0)
+  submissionKey  String?          @unique
+  lastSavedAt    DateTime         @default(now())
+  submittedAt    DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  reviews       Review[]
+  adjudications Adjudication[]
+
+  @@unique([taskId, annotatorId, schemaVersionId])
+  @@index([taskId, status])
+  @@index([annotatorId, status])
+}
+
+model Review {
+  id               String         @id @default(cuid())
+  annotationId     String
+  annotation       Annotation     @relation(fields: [annotationId], references: [id], onDelete: Cascade)
+  taskId           String
+  task             AnnotationTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  reviewerId       String
+  reviewer         User           @relation(fields: [reviewerId], references: [id])
+  decision         ReviewDecision
+  feedback         String?
+  observedRevision Int
+  dedupeKey        String?        @unique
+  createdAt        DateTime       @default(now())
+
+  @@index([annotationId, createdAt])
+  @@index([taskId, createdAt])
+}
+
+model Adjudication {
+  id                   String         @id @default(cuid())
+  taskId               String
+  task                 AnnotationTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  adjudicatorId        String
+  adjudicator          User           @relation(fields: [adjudicatorId], references: [id])
+  schemaVersionId      String
+  schemaVersion        AnnotationSchemaVersion @relation(fields: [schemaVersionId], references: [id])
+  finalAnswer          Json
+  rationale            String
+  chosenAnnotationId   String?
+  chosenAnnotation     Annotation?    @relation(fields: [chosenAnnotationId], references: [id], onDelete: SetNull)
+  expectedTaskVersion  Int
+  createdAt            DateTime       @default(now())
+
+  @@unique([taskId])
+  @@index([adjudicatorId, createdAt])
+}
+
+model DatasetRelease {
+  id             String        @id @default(cuid())
+  projectId      String
+  project        Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  versionNumber  Int
+  datasetVersionId String
+  schemaVersionId String
+  schemaVersion  AnnotationSchemaVersion @relation(fields: [schemaVersionId], references: [id])
+  selectionPolicy String
+  recordCount    Int
+  annotationCount Int
+  excludedCount  Int
+  checksum       String
+  csvChecksum    String
+  manifest       Json
+  status         ReleaseStatus @default(PUBLISHED)
+  createdById    String
+  createdBy      User          @relation(fields: [createdById], references: [id])
+  createdAt      DateTime      @default(now())
+  publishedAt    DateTime?
+
+  items ReleaseItem[]
+
+  @@unique([projectId, versionNumber])
+  @@index([projectId, createdAt])
+}
+
+model ReleaseItem {
+  id              String         @id @default(cuid())
+  releaseId       String
+  release         DatasetRelease @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+  position        Int
+  datasetRecordId String?
+  datasetRecord   DatasetRecord? @relation(fields: [datasetRecordId], references: [id], onDelete: SetNull)
+  taskId          String
+  task            AnnotationTask @relation(fields: [taskId], references: [id])
+  sourceId        String
+  data            Json
+  answer          Json
+  provenance      Json
+  contentHash     String
+
+  @@unique([releaseId, position])
+  @@unique([releaseId, sourceId])
+  @@index([releaseId])
+}
+
+model AuditEvent {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  actorId     String?
+  actor       User?     @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action      String
+  targetType  String
+  targetId    String?
+  metadata    Json?
+  createdAt   DateTime  @default(now())
+
+  @@index([workspaceId, createdAt])
+  @@index([action])
+}
+
+model ImportBatch {
+  id               String       @id @default(cuid())
+  workspaceId      String
+  workspace        Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  projectId        String
+  project          Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdById      String
+  createdBy        User         @relation(fields: [createdById], references: [id])
+  fileName         String
+  format           FileFormat
+  sourceChecksum   String
+  byteSize         Int
+  status           ImportStatus @default(PREVIEW_READY)
+  parseOptions     Json
+  totalRows        Int
+  validRows        Int
+  invalidRows      Int
+  duplicateRows    Int
+  normalizationNotes Json?
+  errorsTruncated  Boolean      @default(false)
+  expiresAt        DateTime
+  committedAt      DateTime?
+  committedVersionId String?
+  createdAt        DateTime     @default(now())
+
+  rows   ImportBatchRow[]
+  errors ImportRowError[]
+
+  @@index([projectId, createdAt])
+  @@index([workspaceId, status])
+  @@index([expiresAt])
+}
+
+model ImportBatchRow {
+  id        String      @id @default(cuid())
+  batchId   String
+  batch     ImportBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  rowNumber Int
+  sourceId  String?
+  data      Json?
+  valid     Boolean
+  errorCode String?
+
+  @@unique([batchId, rowNumber])
+  @@index([batchId, valid])
+}
+
+model ImportRowError {
+  id        String      @id @default(cuid())
+  batchId   String
+  batch     ImportBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  rowNumber Int
+  field     String?
+  code      String
+  message   String
+
+  @@index([batchId, rowNumber])
+}
+
+model RateLimitBucket {
+  id          String   @id @default(cuid())
+  key         String
+  windowStart DateTime
+  count       Int      @default(1)
+
+  @@unique([key, windowStart])
+  @@index([windowStart])
+}
