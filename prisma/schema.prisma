@@ -435,6 +435,7 @@ model ReleaseItem {
   releaseId       String
   release         DatasetRelease @relation(fields: [releaseId], references: [id], onDelete: Cascade)
   position        Int
+  sourceOrder     Int
   datasetRecordId String?
   datasetRecord   DatasetRecord? @relation(fields: [datasetRecordId], references: [id], onDelete: SetNull)
   taskId          String
