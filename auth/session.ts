@@ -2,10 +2,10 @@ import "server-only";
 
 import { cache } from "react";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { notFound as notFoundPage, redirect } from "next/navigation";
 
 import { prisma } from "@/lib/db";
-import { AppError, forbidden, notFound } from "@/lib/errors";
+import { AppError, forbidden, notFound as notFoundError } from "@/lib/errors";
 import { hashOpaqueToken, newOpaqueToken } from "@/auth/tokens";
 import { isManager, canReview, canAnnotate } from "@/auth/permissions";
 import type { WorkspaceRole } from "@/generated/prisma/enums";
@@ -148,7 +148,7 @@ export async function requireWorkspacePage(
 ): Promise<WorkspaceAccess> {
   const user = await requirePageUser(`/workspaces/${workspaceId}`);
   const access = await getWorkspaceAccess(workspaceId, user);
-  if (!access) notFound("Workspace not found.");
+  if (!access) notFoundPage();
   if (!check(access.roles)) {
     redirect(`/workspaces/${workspaceId}?denied=1`);
   }
@@ -160,7 +160,7 @@ export async function requireWorkspaceApi(
 ): Promise<WorkspaceAccess> {
   const user = await requireApiUser();
   const access = await getWorkspaceAccess(workspaceId, user);
-  if (!access) throw notFound("Workspace not found.");
+  if (!access) throw notFoundError("Workspace not found.");
   return access;
 }
 
