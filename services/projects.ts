@@ -268,3 +268,30 @@ export async function deleteProject(input: {
     await tx.project.delete({ where: { id: project.id } });
   });
 }
+
+export async function getRecentDatasetFields(projectId: string): Promise<string[]> {
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    include: {
+      dataset: {
+        include: {
+          currentVersion: {
+            include: {
+              records: { orderBy: { sourceOrder: "asc" }, take: 1 },
+            },
+          },
+        },
+      },
+    },
+  });
+  const record = project?.dataset?.currentVersion?.records[0];
+  if (
+    !record ||
+    !record.data ||
+    typeof record.data !== "object" ||
+    Array.isArray(record.data)
+  ) {
+    return [];
+  }
+  return Object.keys(record.data as Record<string, unknown>).slice(0, 60);
+}
