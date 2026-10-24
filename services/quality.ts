@@ -2,7 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/db";
 import { metricForField, type AgreementMetric } from "@/domain/agreement";
-import { parseAnnotationSchema, type AnnotationSchema, type SchemaField } from "@/domain/schema";
+import { parseAnnotationSchema, type SchemaField } from "@/domain/schema";
 import { TASK_STATUS_LABELS } from "@/domain/workflow";
 
 export const QUALITY_ANNOTATION_LIMIT = 20_000;

@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { ZodError } from "zod";
 
 import { createSession, destroyCurrentSession } from "@/auth/session";
-import { AppError, isAppError } from "@/lib/errors";
+import { isAppError } from "@/lib/errors";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import { demoLoginUser, loginUser, signupUser, type DemoRole } from "@/services/auth";
 import {
