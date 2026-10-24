@@ -1,0 +1,13 @@
+review_id,product,channel,customer_tier,review_text
+R-1001,Atlas Notes,email,Pro,"The search filters reset every time I reopen the app. I lose my place and have to rebuild the view."
+R-1002,Atlas Notes,chat,Starter,"Billing charged me twice for the annual plan. Support fixed it within a day, but the invoice still shows both charges."
+R-1003,Forge Boards,email,Team,"I cannot export a board to CSV. The button spins forever and then nothing happens."
+R-1004,Atlas Notes,survey,Pro,"The new table view is fast and the keyboard shortcuts are exactly what I needed."
+R-1005,Signal Desk,chat,Starter,"Adding a second workspace is confusing. The settings page never explains what gets shared."
+R-1006,Signal Desk,email,Team,"The weekly digest keeps arriving on Sunday even though I set Monday in preferences."
+R-1007,Forge Boards,survey,Pro,"Card colors are useful, but I want to save a filtered view for my whole team."
+R-1008,Atlas Notes,email,Team,"The new onboarding checklist was clear and saved me a support call."
+R-1009,Forge Boards,chat,Starter,"Dragging a card on mobile is almost impossible. It keeps opening the card instead."
+R-1010,Signal Desk,survey,Team,"The audit log helped us find who changed the workspace permissions. Please add export."
+R-1011,Atlas Notes,email,Pro,"I would like a dark theme for the editor. Light mode is hard on long sessions."
+R-1012,Signal Desk,chat,Starter,"Our integration stopped syncing after the last update. No error message anywhere."

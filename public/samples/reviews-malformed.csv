@@ -1,0 +1,7 @@
+review_id,product,channel,customer_tier,review_text
+X-2001,Atlas Notes,email,Pro,"A valid row that should commit."
+X-2002,Atlas Notes,email,Pro
+X-2001,Forge Boards,survey,Team,"Duplicate source identity."
+X-2004,Signal Desk,chat,Starter,"Too many columns.",extra
+,,,,
+X-2006,Atlas Notes,email,Team,"Another valid row."

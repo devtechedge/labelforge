@@ -1,0 +1,10 @@
+{"case_id":"C-9001","queue":"billing","summary":"Duplicate annual invoice on a team plan","minutes_open":42,"reopened":false,"resolution_note":"Refund issued and invoice regenerated."}
+{"case_id":"C-9002","queue":"technical","summary":"SSO login loops back to the sign-in screen","minutes_open":310,"reopened":true,"resolution_note":"Root cause traced to an expired metadata certificate."}
+{"case_id":"C-9003","queue":"account","summary":"Workspace owner left the company without transferring access","minutes_open":85,"reopened":false,"resolution_note":"Ownership transferred after domain verification."}
+{"case_id":"C-9004","queue":"shipping","summary":"Replacement shipment contains the wrong dock kit","minutes_open":150,"reopened":false,"resolution_note":"Correct kit dispatched with return label."}
+{"case_id":"C-9005","queue":"billing","summary":"Plan downgrade still charges the annual rate","minutes_open":20,"reopened":true,"resolution_note":"Proration applied; billing cycle corrected."}
+{"case_id":"C-9006","queue":"technical","summary":"API webhook retries after a successful 200 response","minutes_open":480,"reopened":true,"resolution_note":"Idempotency key bug reproduced and fixed."}
+{"case_id":"C-9007","queue":"account","summary":"Seat count does not match the purchased quantity","minutes_open":35,"reopened":false,"resolution_note":"Seat sync rerun and confirmed."}
+{"case_id":"C-9008","queue":"shipping","summary":"Address correction requested after dispatch","minutes_open":65,"reopened":false,"resolution_note":"Carrier updated the delivery address."}
+{"case_id":"C-9009","queue":"technical","summary":"Data export stalls at ninety percent","minutes_open":720,"reopened":true,"resolution_note":"Export worker restarted; large payload split."}
+{"case_id":"C-9010","queue":"billing","summary":"Tax invoice shows the wrong registered address","minutes_open":25,"reopened":false,"resolution_note":"Tax profile corrected and invoice reissued."}

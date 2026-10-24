@@ -1,0 +1,7 @@
+{"case_id":"C-X001","queue":"technical","summary":"This line is valid","minutes_open":10,"reopened":false,"resolution_note":"No action needed."}
+this is not json
+{"case_id":"C-X001","queue":"billing","summary":"Duplicate identifier","minutes_open":20,"reopened":false,"resolution_note":"Duplicate."}
+{}
+[1,2,3]
+{"case_id":"C-X005","queue":"account","summary":"Deeply nested payload","minutes_open":30,"reopened":false,"resolution_note":"Nested.","meta":{"a":{"b":{"c":{"d":{"e":{"f":1}}}}}}}
+{"case_id":"C-X006","queue":"shipping","summary":"Another valid row","minutes_open":40,"reopened":false,"resolution_note":"Fine."}

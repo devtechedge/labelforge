@@ -23,10 +23,8 @@ export async function listReviewQueue(input: {
 }) {
   const where: Prisma.AnnotationTaskWhereInput = {
     projectId: input.projectId,
-    OR: [
-      { status: { in: ["SUBMITTED", "IN_REVIEW", "RETURNED_FOR_CORRECTION"] } },
-      { annotations: { some: { status: "SUBMITTED" } } },
-    ],
+    status: { in: ["SUBMITTED", "IN_REVIEW", "RETURNED_FOR_CORRECTION"] },
+    annotations: { some: { status: "SUBMITTED" } },
   };
 
   const [tasks, total] = await Promise.all([
