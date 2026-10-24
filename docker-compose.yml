@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: labelforge
+      POSTGRES_PASSWORD: labelforge
+      POSTGRES_DB: labelforge
+    ports:
+      - "55432:5432"
+    volumes:
+      - labelforge-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U labelforge -d labelforge"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  labelforge-db:
