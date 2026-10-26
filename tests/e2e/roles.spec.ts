@@ -42,10 +42,15 @@ test("outsider cannot access another workspace project", async ({ browser }) => 
   await outsider.getByLabel("Password").fill("DemoPass!2026");
   await outsider.getByRole("button", { name: "Sign in", exact: true }).click();
   await outsider.waitForURL("**/workspaces");
+  const projectId = new URL(projectUrl).pathname.split("/").pop();
   const response = await outsider.request.get(
-    new URL(projectUrl, "http://localhost:3000").pathname,
+    `http://localhost:3000/api/projects/${projectId}`,
   );
   expect(response.status()).toBe(404);
+  await outsider.goto(projectUrl);
+  await expect(
+    outsider.getByRole("heading", { name: /not on the workbench/i }),
+  ).toBeVisible();
   expect(await outsider.locator(".workspace-card").count()).toBe(0);
   await outsiderContext.close();
 });
