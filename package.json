@@ -23,7 +23,8 @@
     "test:db:up": "docker compose up -d --wait db",
     "test:db:down": "docker compose down",
     "test:unit": "vitest run -c vitest.config.mts",
-    "test:all": "npm run test:unit && npm run test:integration"
+    "test:all": "npm run test:unit && npm run test:integration",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.10.1",
