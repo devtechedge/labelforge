@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Brand } from "@/components/Brand";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function AuthShell({ children }: { children: React.ReactNode }) {
   return (
@@ -26,6 +27,9 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
       <main id="main-content" className="auth-main">
+        <div className="auth-theme">
+          <ThemeToggle />
+        </div>
         <div className="auth-form-wrap">
           {children}
           <p className="auth-switch">

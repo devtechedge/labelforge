@@ -46,6 +46,11 @@ export const metadata: Metadata = {
     description:
       "A collaborative, auditable workflow for structured data annotation.",
   },
+  icons: {
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
 };
 
 export const viewport: Viewport = {
@@ -59,7 +64,15 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" data-scroll-behavior="smooth">
+    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              '(function(){try{if(localStorage.getItem("labelforge-theme")==="dark"){document.documentElement.dataset.theme="dark";}}catch(e){}})();',
+          }}
+        />
+      </head>
       <body className={`${sans.variable} ${display.variable} ${mono.variable}`}>
         <a className="skip-link" href="#main-content">
           Skip to main content

@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Brand } from "@/components/Brand";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { logoutAction } from "@/app/actions/auth";
 import type { SessionUser } from "@/auth/session";
 
@@ -20,6 +21,7 @@ export function AppHeader({ user }: { user: SessionUser }) {
         <Brand href="/workspaces" />
         <nav className="app-nav" aria-label="Workspace navigation">
           <Link href="/workspaces">Workspaces</Link>
+          <ThemeToggle />
           <div className="user-chip">
             <span className="avatar" aria-hidden="true">
               {initials(user.displayName)}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Brand } from "@/components/Brand";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { getCurrentUser } from "@/auth/session";
 
 export async function PublicHeader() {
@@ -17,6 +18,7 @@ export async function PublicHeader() {
           <Link href="/#limits" className="nav-secondary">
             Limits
           </Link>
+          <ThemeToggle />
           {user ? (
             <Link className="btn btn-secondary btn-sm" href="/workspaces">
               Open workspaces
