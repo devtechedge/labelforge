@@ -61,6 +61,16 @@ export function deriveTaskStatus(input: {
   if (rejected >= input.requiredAnnotations) return "REJECTED";
 
   if (statuses.length === 0) return "IN_PROGRESS";
+
+  const exhausted =
+    statuses.length >= input.requiredAnnotations &&
+    statuses.every(
+      (status) => status === "ACCEPTED" || status === "REJECTED",
+    );
+  if (exhausted) return "REJECTED";
+  if (statuses.some((status) => status === "ACCEPTED" || status === "REJECTED")) {
+    return "IN_REVIEW";
+  }
   if (
     statuses.filter((status) => status === "SUBMITTED" || status === "ACCEPTED")
       .length >= input.requiredAnnotations

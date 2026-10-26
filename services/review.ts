@@ -200,7 +200,10 @@ export async function reviewAnnotation(input: {
   if (input.idempotencyKey) {
     const existing = await prisma.review.findUnique({
       where: { dedupeKey: input.idempotencyKey },
-      include: { annotation: { select: { status: true, revision: true } } },
+      include: {
+        annotation: { select: { status: true, revision: true } },
+        task: { select: { status: true } },
+      },
     });
     if (existing) {
       if (existing.annotationId !== input.annotationId) {
@@ -211,6 +214,7 @@ export async function reviewAnnotation(input: {
         reviewId: existing.id,
         annotationStatus: existing.annotation.status,
         annotationRevision: existing.annotation.revision,
+        taskStatus: existing.task.status,
       };
     }
   }
@@ -224,7 +228,7 @@ export async function reviewAnnotation(input: {
       include: {
         task: {
           include: {
-            annotations: { select: { status: true } },
+            annotations: { select: { id: true, status: true } },
             adjudications: { select: { id: true } },
           },
         },
@@ -334,7 +338,7 @@ export async function reviewAnnotation(input: {
     }
 
     const annotations = current.task.annotations.map((item) =>
-      item.status === current.status ? { status: annotationStatus } : item,
+      item.id === current.id ? { status: annotationStatus } : item,
     );
     const derived = deriveTaskStatus({
       annotations,
@@ -432,8 +436,8 @@ export async function adjudicateTask(input: {
     throw forbidden("Only reviewers, managers, and owners can adjudicate.");
   }
   if (access.project.status !== "ACTIVE") throw conflict("This project is archived.");
-  if (!["DISPUTED", "ADJUDICATION"].includes(access.task.status)) {
-    throw conflict("This task is not disputed.");
+  if (access.task.status !== "ADJUDICATION") {
+    throw conflict("Begin adjudication before recording a final answer.");
   }
   if (access.task.annotations.some((item) => item.annotatorId === input.user.id)) {
     throw conflict("You annotated this task, so you cannot adjudicate it.");
@@ -467,8 +471,8 @@ export async function adjudicateTask(input: {
       include: { adjudications: { select: { id: true } } },
     });
     if (!task) throw notFound("Task not found.");
-    if (!["DISPUTED", "ADJUDICATION"].includes(task.status)) {
-      throw conflict("This task is not disputed.");
+    if (task.status !== "ADJUDICATION") {
+      throw conflict("Begin adjudication before recording a final answer.");
     }
     if (task.version !== input.expectedTaskVersion) {
       throw conflict("This task changed since you loaded it. Reload before adjudicating.", {
