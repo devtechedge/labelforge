@@ -338,6 +338,85 @@ describe("annotation and review workflow", () => {
     expect(await prisma.adjudication.count({ where: { taskId } })).toBe(1);
   });
 
+
+  it("accepts only one of two simultaneous draft creates", async () => {
+    const scenario = await createScenario({ label: "concurrent-draft" });
+    const taskId = scenario.tasks[0]!.id;
+    await assignTask({
+      taskId,
+      userId: scenario.annotator.id,
+      assignedById: scenario.owner.id,
+      single: true,
+      taskStatus: "ASSIGNED",
+    });
+    const results = await Promise.allSettled([
+      saveDraft({
+        user: scenario.annotator,
+        workspaceId: scenario.workspace.id,
+        projectId: scenario.project.id,
+        taskId,
+        answer: { category: "a" },
+        expectedRevision: 0,
+      }),
+      saveDraft({
+        user: scenario.annotator,
+        workspaceId: scenario.workspace.id,
+        projectId: scenario.project.id,
+        taskId,
+        answer: { category: "b" },
+        expectedRevision: 0,
+      }),
+    ]);
+    const fulfilled = results.filter((result) => result.status === "fulfilled");
+    const rejected = results.filter((result) => result.status === "rejected");
+    expect(fulfilled).toHaveLength(1);
+    expect(rejected).toHaveLength(1);
+    const reason = rejected[0] as PromiseRejectedResult;
+    expect(reason.reason).toMatchObject({ code: "CONFLICT" });
+    expect(await prisma.annotation.count({ where: { taskId } })).toBe(1);
+  });
+
+  it("rejects a reviewer using a revision different from the one shown", async () => {
+    const scenario = await createScenario({ label: "stale-review" });
+    const taskId = scenario.tasks[0]!.id;
+    await assignTask({
+      taskId,
+      userId: scenario.annotator.id,
+      assignedById: scenario.owner.id,
+      single: true,
+      taskStatus: "ASSIGNED",
+    });
+    await saveDraft({
+      user: scenario.annotator,
+      workspaceId: scenario.workspace.id,
+      projectId: scenario.project.id,
+      taskId,
+      answer: { category: "a" },
+      expectedRevision: 0,
+    });
+    await submitAnnotation({
+      user: scenario.annotator,
+      workspaceId: scenario.workspace.id,
+      projectId: scenario.project.id,
+      taskId,
+      expectedRevision: 1,
+      submissionKey: "stale-review-key",
+    });
+    const annotation = await prisma.annotation.findFirstOrThrow({ where: { taskId } });
+    await expect(
+      reviewAnnotation({
+        user: scenario.reviewer,
+        annotationId: annotation.id,
+        decision: "PASS",
+        expectedRevision: annotation.revision - 1,
+      }),
+    ).rejects.toMatchObject({ code: "CONFLICT" });
+    expect(
+      (await prisma.annotation.findUniqueOrThrow({ where: { id: annotation.id } }))
+        .status,
+    ).toBe("SUBMITTED");
+  });
+
   it("pins existing tasks to their schema through unstarted-only migration", async () => {
     const scenario = await createScenario({
       recordCount: 2,
