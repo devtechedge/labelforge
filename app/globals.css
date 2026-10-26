@@ -637,6 +637,12 @@ pre {
   color: var(--danger);
 }
 
+.status-published {
+  background: var(--success-soft);
+  border-color: rgba(40, 99, 72, 0.3);
+  color: var(--success);
+}
+
 .status-adjudication {
   background: #efe1ee;
   border-color: rgba(107, 46, 105, 0.3);

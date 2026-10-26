@@ -129,7 +129,7 @@ export default async function SchemaPage({
                       </div>
                       <div className="cluster">
                         <StatusBadge
-                          status={schema.status === "PUBLISHED" ? "ACCEPTED" : "DRAFT"}
+                          status={schema.status}
                         />
                         {schema.status === "DRAFT" ? (
                           <PublishSchemaButton

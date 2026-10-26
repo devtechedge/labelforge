@@ -108,6 +108,7 @@ export function AnnotationWorkbench({ data }: { data: WorkbenchData }) {
   const [savedAt, setSavedAt] = useState<string | null>(
     data.annotation?.lastSavedAt ?? data.annotation?.submittedAt ?? null,
   );
+  const [relativeSaved, setRelativeSaved] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [conflict, setConflict] = useState(false);
@@ -209,6 +210,17 @@ export function AnnotationWorkbench({ data }: { data: WorkbenchData }) {
   );
 
   saveNowRef.current = saveNow;
+
+  useEffect(() => {
+    if (saveState !== "saved" || !savedAt) {
+      setRelativeSaved(null);
+      return;
+    }
+    const update = () => setRelativeSaved(formatRelative(savedAt));
+    update();
+    const timer = window.setInterval(update, 30_000);
+    return () => window.clearInterval(timer);
+  }, [saveState, savedAt]);
 
   useEffect(() => {
     if (!initialized.current) {
@@ -364,10 +376,10 @@ export function AnnotationWorkbench({ data }: { data: WorkbenchData }) {
     if (saveState === "unsaved") return "Unsaved changes";
     if (saveState === "error") return "Save failed";
     if (saveState === "saved") {
-      return savedAt ? `Saved ${formatRelative(savedAt)}` : "Saved";
+      return relativeSaved ? `Saved ${relativeSaved}` : "Saved";
     }
     return "No saved draft";
-  }, [conflict, saveState, savedAt]);
+  }, [conflict, saveState, relativeSaved]);
 
   const records = Object.entries(task.record);
 

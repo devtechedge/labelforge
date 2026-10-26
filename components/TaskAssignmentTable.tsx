@@ -268,7 +268,7 @@ export function TaskAssignmentTable({
                       {submitted} / {task.requiredAnnotations}
                     </span>
                   </td>
-                  <td className="tiny muted">{formatRelative(task.updatedAt)}</td>
+                  <td className="tiny muted" suppressHydrationWarning>{formatRelative(task.updatedAt)}</td>
                   <td>
                     {isMine && canAnnotate ? (
                       <Link

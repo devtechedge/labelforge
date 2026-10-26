@@ -26,6 +26,6 @@ export function buildReleaseBundle(input: {
         ].join("\n"),
       ),
     },
-    { mtime: 0, level: 6 },
+    { mtime: new Date("1980-01-01T00:00:00Z"), level: 6 },
   );
 }

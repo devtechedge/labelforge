@@ -304,7 +304,7 @@ model AnnotationTask {
   datasetRecordId     String
   datasetRecord       DatasetRecord  @relation(fields: [datasetRecordId], references: [id], onDelete: Cascade)
   schemaVersionId     String
-  schemaVersion       AnnotationSchemaVersion @relation(fields: [schemaVersionId], references: [id])
+  schemaVersion       AnnotationSchemaVersion @relation(fields: [schemaVersionId], references: [id], onDelete: Cascade)
   status              TaskStatus     @default(UNASSIGNED)
   version             Int            @default(0)
   priority            Int            @default(0)
@@ -348,7 +348,7 @@ model Annotation {
   annotatorId    String
   annotator      User             @relation(fields: [annotatorId], references: [id])
   schemaVersionId String
-  schemaVersion  AnnotationSchemaVersion @relation(fields: [schemaVersionId], references: [id])
+  schemaVersion  AnnotationSchemaVersion @relation(fields: [schemaVersionId], references: [id], onDelete: Cascade)
   answer         Json
   status         AnnotationStatus @default(DRAFT)
   revision       Int              @default(0)
@@ -391,7 +391,7 @@ model Adjudication {
   adjudicatorId        String
   adjudicator          User           @relation(fields: [adjudicatorId], references: [id])
   schemaVersionId      String
-  schemaVersion        AnnotationSchemaVersion @relation(fields: [schemaVersionId], references: [id])
+  schemaVersion        AnnotationSchemaVersion @relation(fields: [schemaVersionId], references: [id], onDelete: Cascade)
   finalAnswer          Json
   rationale            String
   chosenAnnotationId   String?
@@ -410,7 +410,7 @@ model DatasetRelease {
   versionNumber  Int
   datasetVersionId String
   schemaVersionId String
-  schemaVersion  AnnotationSchemaVersion @relation(fields: [schemaVersionId], references: [id])
+  schemaVersion  AnnotationSchemaVersion @relation(fields: [schemaVersionId], references: [id], onDelete: Cascade)
   selectionPolicy String
   recordCount    Int
   annotationCount Int
@@ -439,7 +439,7 @@ model ReleaseItem {
   datasetRecordId String?
   datasetRecord   DatasetRecord? @relation(fields: [datasetRecordId], references: [id], onDelete: SetNull)
   taskId          String
-  task            AnnotationTask @relation(fields: [taskId], references: [id])
+  task            AnnotationTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
   sourceId        String
   data            Json
   answer          Json

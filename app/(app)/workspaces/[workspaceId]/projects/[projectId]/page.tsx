@@ -256,7 +256,7 @@ export default async function ProjectOverviewPage({
                   <li className="schema-version" key={schema.id}>
                     <div className="spread">
                       <span className="mono">v{schema.versionNumber}</span>
-                      <StatusBadge status={schema.status === "PUBLISHED" ? "ACCEPTED" : "DRAFT"} />
+                      <StatusBadge status={schema.status} />
                     </div>
                     <p className="tiny muted" style={{ marginTop: "0.3rem" }}>
                       {schema._count.tasks} tasks · {schema._count.annotations} annotations ·{" "}

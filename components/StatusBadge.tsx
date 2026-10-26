@@ -4,13 +4,21 @@ import {
   TASK_STATUS_LABELS,
 } from "@/domain/workflow";
 
-type Status = TaskStatus | AnnotationStatus | "EXPIRED" | "COMMITTED" | "PREVIEW_READY" | "ARCHIVED";
+type Status =
+  | TaskStatus
+  | AnnotationStatus
+  | "EXPIRED"
+  | "COMMITTED"
+  | "PREVIEW_READY"
+  | "ARCHIVED"
+  | "PUBLISHED";
 
 const EXTRA_LABELS: Record<string, string> = {
   EXPIRED: "Expired",
   COMMITTED: "Committed",
   PREVIEW_READY: "Preview ready",
   ARCHIVED: "Archived",
+  PUBLISHED: "Published",
 };
 
 export function StatusBadge({ status }: { status: Status | string }) {
