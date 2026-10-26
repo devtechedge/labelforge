@@ -131,7 +131,7 @@ export default async function WorkspacePage({
                         <p className="eyebrow">Project</p>
                         <h2>{project.name}</h2>
                       </div>
-                      <StatusBadge status={project.status === "ARCHIVED" ? "ARCHIVED" : "IN_PROGRESS"} />
+                      <StatusBadge status={project.status === "ARCHIVED" ? "ARCHIVED" : "ACTIVE"} />
                     </div>
                     <p className="small muted">
                       {project.description || "No description yet."}

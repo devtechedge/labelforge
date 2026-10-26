@@ -234,6 +234,18 @@ export function TaskAssignmentTable({
               const isMine = task.assignments.some(
                 (assignment) => assignment.userId === currentUserId,
               );
+              const editableAnnotation =
+                task.myAnnotation?.status === "DRAFT" ||
+                task.myAnnotation?.status === "RETURNED_FOR_CORRECTION";
+              const lockedTask = [
+                "SUBMITTED",
+                "IN_REVIEW",
+                "ACCEPTED",
+                "REJECTED",
+                "DISPUTED",
+                "ADJUDICATION",
+                "RESOLVED",
+              ].includes(task.status);
               return (
                 <tr key={task.id}>
                   {canAssign ? (
@@ -275,10 +287,13 @@ export function TaskAssignmentTable({
                         className="btn btn-secondary btn-sm"
                         href={`/workspaces/${workspaceId}/projects/${projectId}/annotate/${task.id}`}
                       >
-                        {task.myAnnotation?.status === "DRAFT" ||
-                        task.myAnnotation?.status === "RETURNED_FOR_CORRECTION"
+                        {editableAnnotation
                           ? "Continue"
-                          : "Open workbench"}
+                          : task.myAnnotation
+                            ? "View answers"
+                            : lockedTask
+                              ? "View task"
+                              : "Open workbench"}
                       </Link>
                     ) : (
                       <span className="tiny muted">

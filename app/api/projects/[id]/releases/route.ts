@@ -1,20 +1,31 @@
 import { assertSameOrigin, apiOk, handleApiError, readJson } from "@/lib/api";
 import { requireProjectApi } from "@/repositories/api-access";
 import { listReleases, publishRelease } from "@/services/releases";
-import { releaseCreateSchema } from "@/validation/requests";
+import { paginationSchema, releaseCreateSchema } from "@/validation/requests";
+import { LIMITS } from "@/domain/limits";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
     await requireProjectApi(id);
-    const result = await listReleases(id);
-    return apiOk(result);
+    const url = new URL(request.url);
+    const pagination = paginationSchema.parse({
+      page: url.searchParams.get("page") ?? 1,
+      limit: url.searchParams.get("limit") ?? LIMITS.releasesPerPage,
+    });
+    const result = await listReleases(id, pagination.page);
+    return apiOk({
+      ...result,
+      page: pagination.page,
+      pageSize: LIMITS.releasesPerPage,
+      pageCount: Math.max(1, Math.ceil(result.total / LIMITS.releasesPerPage)),
+    });
   } catch (error) {
     return handleApiError(error);
   }

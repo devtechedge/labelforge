@@ -8,6 +8,7 @@ import { LIMITS } from "@/domain/limits";
 import { contentHash } from "@/domain/canonical";
 import { prepareImport, sanitizeFileName, type ImportFormat, type ImportOptions } from "@/importers";
 import { recordAudit } from "@/services/audit";
+import { cleanupStaleData } from "@/services/maintenance";
 import type { WorkspaceRole } from "@/generated/prisma/enums";
 import type { SessionUser } from "@/auth/session";
 
@@ -36,6 +37,8 @@ export async function createImportPreview(input: {
   if (!project.dataset) {
     throw conflict("This project has no dataset container. Recreate the project.");
   }
+
+  await cleanupStaleData().catch(() => undefined);
 
   const prepared = prepareImport({
     bytes: input.bytes,

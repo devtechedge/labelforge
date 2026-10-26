@@ -11,7 +11,8 @@ type Status =
   | "COMMITTED"
   | "PREVIEW_READY"
   | "ARCHIVED"
-  | "PUBLISHED";
+  | "PUBLISHED"
+  | "ACTIVE";
 
 const EXTRA_LABELS: Record<string, string> = {
   EXPIRED: "Expired",
@@ -19,6 +20,7 @@ const EXTRA_LABELS: Record<string, string> = {
   PREVIEW_READY: "Preview ready",
   ARCHIVED: "Archived",
   PUBLISHED: "Published",
+  ACTIVE: "Active",
 };
 
 export function StatusBadge({ status }: { status: Status | string }) {
