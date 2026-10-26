@@ -20,4 +20,5 @@ next-env.d.ts
 .vercel
 
 .vercel
-.env*
+
+/qa-10100-prompt.md
