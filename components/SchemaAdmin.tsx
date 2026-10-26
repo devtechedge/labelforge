@@ -16,10 +16,12 @@ export function PublishSchemaButton({
   projectId,
   schemaVersionId,
   versionNumber,
+  afterPublishHref,
 }: {
   projectId: string;
   schemaVersionId: string;
   versionNumber: number;
+  afterPublishHref: string;
 }) {
   const router = useRouter();
   const [state, setState] = useState<{ busy: boolean; message?: string; error?: string }>({
@@ -39,7 +41,7 @@ export function PublishSchemaButton({
         return;
       }
       setState({ busy: false, message: `Schema v${versionNumber} published.` });
-      router.refresh();
+      router.replace(afterPublishHref);
     } catch {
       setState({ busy: false, error: "The publish request failed." });
     }
@@ -185,8 +187,10 @@ export function GenerateTasksPanel({
   datasetVersions: Array<{ id: string; versionNumber: number; recordCount: number }>;
 }) {
   const router = useRouter();
-  const [schemaVersionId, setSchemaVersionId] = useState(schemas[0]?.id ?? "");
-  const [datasetVersionId, setDatasetVersionId] = useState(datasetVersions[0]?.id ?? "");
+  const [schemaVersionId, setSchemaVersionId] = useState("");
+  const [datasetVersionId, setDatasetVersionId] = useState("");
+  const effectiveSchemaVersionId = schemaVersionId || schemas[0]?.id || "";
+  const effectiveDatasetVersionId = datasetVersionId || datasetVersions[0]?.id || "";
   const [state, setState] = useState<{
     busy: boolean;
     message?: string;
@@ -200,7 +204,10 @@ export function GenerateTasksPanel({
       const response = await fetch(`/api/projects/${projectId}/generate-tasks`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ schemaVersionId, datasetVersionId }),
+        body: JSON.stringify({
+          schemaVersionId: effectiveSchemaVersionId,
+          datasetVersionId: effectiveDatasetVersionId,
+        }),
       });
       if (!response.ok) {
         setState({ busy: false, error: await readError(response) });
@@ -233,7 +240,7 @@ export function GenerateTasksPanel({
           <select
             className="select"
             id="generate-schema"
-            value={schemaVersionId}
+            value={effectiveSchemaVersionId}
             onChange={(event) => setSchemaVersionId(event.target.value)}
           >
             {schemas.map((schema) => (
@@ -248,7 +255,7 @@ export function GenerateTasksPanel({
           <select
             className="select"
             id="generate-dataset"
-            value={datasetVersionId}
+            value={effectiveDatasetVersionId}
             onChange={(event) => setDatasetVersionId(event.target.value)}
           >
             {datasetVersions.map((version) => (

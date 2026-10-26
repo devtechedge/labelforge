@@ -213,6 +213,7 @@ export function AnnotationWorkbench({ data }: { data: WorkbenchData }) {
 
   useEffect(() => {
     if (saveState !== "saved" || !savedAt) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRelativeSaved(null);
       return;
     }

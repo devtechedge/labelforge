@@ -23,10 +23,13 @@ export const metadata: Metadata = {
 
 export default async function SchemaPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ workspaceId: string; projectId: string }>;
+  searchParams: Promise<{ published?: string }>;
 }) {
   const { workspaceId, projectId } = await params;
+  const query = await searchParams;
   const access = await requireProjectPage(workspaceId, projectId);
   if (!isManager(access.roles)) {
     return (
@@ -62,6 +65,11 @@ export default async function SchemaPage({
       description={access.project.description}
     >
       <div className="stack-lg">
+        {query.published ? (
+          <div className="success-note" role="status">
+            Schema published. You can now generate tasks from a dataset version.
+          </div>
+        ) : null}
         <div className="stack">
           <p className="eyebrow">Immutable question set</p>
           <h2 className="display-md">Schema versions</h2>
@@ -136,6 +144,7 @@ export default async function SchemaPage({
                             projectId={projectId}
                             schemaVersionId={schema.id}
                             versionNumber={schema.versionNumber}
+                            afterPublishHref={`/workspaces/${workspaceId}/projects/${projectId}/schema?published=1`}
                           />
                         ) : (
                           <ApplySchemaButton

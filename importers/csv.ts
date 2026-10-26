@@ -216,17 +216,6 @@ export function parseCsv(input: string, delimiter = ","): CsvParseResult {
     const issue = rowIssues[index + 1];
     const recordNumber = index + 1;
 
-    if (cells.length !== headers.length) {
-      return {
-        rowNumber: recordNumber,
-        values: null,
-        issue: {
-          rowNumber: recordNumber,
-          code: "COLUMN_COUNT",
-          message: `Expected ${headers.length} columns, found ${cells.length}.`,
-        },
-      };
-    }
     if (cells.every((cell) => cell.trim() === "")) {
       return {
         rowNumber: recordNumber,
@@ -235,6 +224,17 @@ export function parseCsv(input: string, delimiter = ","): CsvParseResult {
           rowNumber: recordNumber,
           code: "BLANK_RECORD",
           message: "The row has no values.",
+        },
+      };
+    }
+    if (cells.length !== headers.length) {
+      return {
+        rowNumber: recordNumber,
+        values: null,
+        issue: {
+          rowNumber: recordNumber,
+          code: "COLUMN_COUNT",
+          message: `Expected ${headers.length} columns, found ${cells.length}.`,
         },
       };
     }

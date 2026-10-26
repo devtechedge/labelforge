@@ -36,10 +36,10 @@ export function ReleasePublisher({
 }) {
   const router = useRouter();
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const [schemaVersionId, setSchemaVersionId] = useState(schemas[0]?.id ?? "");
-  const [datasetVersionId, setDatasetVersionId] = useState(
-    datasetVersions[0]?.id ?? "",
-  );
+  const [schemaVersionId, setSchemaVersionId] = useState("");
+  const [datasetVersionId, setDatasetVersionId] = useState("");
+  const effectiveSchemaVersionId = schemaVersionId || schemas[0]?.id || "";
+  const effectiveDatasetVersionId = datasetVersionId || datasetVersions[0]?.id || "";
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -68,8 +68,8 @@ export function ReleasePublisher({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          schemaVersionId,
-          datasetVersionId,
+          schemaVersionId: effectiveSchemaVersionId,
+          datasetVersionId: effectiveDatasetVersionId,
           notes: notes.trim() || undefined,
         }),
       });
@@ -115,7 +115,7 @@ export function ReleasePublisher({
           <select
             className="select"
             id="release-schema"
-            value={schemaVersionId}
+            value={effectiveSchemaVersionId}
             onChange={(event) => setSchemaVersionId(event.target.value)}
           >
             {schemas.map((schema) => (
@@ -130,7 +130,7 @@ export function ReleasePublisher({
           <select
             className="select"
             id="release-dataset"
-            value={datasetVersionId}
+            value={effectiveDatasetVersionId}
             onChange={(event) => setDatasetVersionId(event.target.value)}
           >
             {datasetVersions.map((version) => (
