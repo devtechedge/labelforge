@@ -2,7 +2,12 @@
 
 An auditable, collaborative workbench for turning CSV and JSONL records into reviewed, versioned datasets.
 
-[Live Demo](https://labelforge-app.vercel.app) · [Next.js 16](https://nextjs.org) · TypeScript · PostgreSQL · MIT
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-7c3aed)](https://labelforge-app.vercel.app)
+[![CI](https://github.com/devtechedge/labelforge/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/devtechedge/labelforge/actions/workflows/ci.yml)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs)](https://nextjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169e1?logo=postgresql&logoColor=white)](https://www.postgresql.org)
+[![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 
 ## Live Demo
 
