@@ -36,7 +36,7 @@ export default async function ReviewPage({
   searchParams,
 }: {
   params: Promise<{ workspaceId: string; projectId: string }>;
-  searchParams: Promise<{ task?: string; page?: string }>;
+  searchParams: Promise<{ task?: string; page?: string; decided?: string }>;
 }) {
   const { workspaceId, projectId } = await params;
   const query = await searchParams;
@@ -86,6 +86,12 @@ export default async function ReviewPage({
             decision is tied to the annotation revision the reviewer saw.
           </p>
         </div>
+
+        {query.decided ? (
+          <div className="success-note" role="status">
+            Decision recorded. The task left the review queue.
+          </div>
+        ) : null}
 
         {adjudicationQueue.tasks.length > 0 ? (
           <section className="card card-pad stack">
@@ -209,6 +215,7 @@ export default async function ReviewPage({
                 currentUserId={access.user.id}
                 workspaceId={workspaceId}
                 projectId={projectId}
+                afterDecisionHref={`${base}?page=${page}&decided=1`}
               />
             )}
           </section>
@@ -224,12 +231,14 @@ function ReviewDetail({
   currentUserId,
   workspaceId,
   projectId,
+  afterDecisionHref,
 }: {
   task: Awaited<ReturnType<typeof listReviewQueue>>["tasks"][number];
   canDecide: boolean;
   currentUserId: string;
   workspaceId: string;
   projectId: string;
+  afterDecisionHref: string;
 }) {
   const parsed = parseAnnotationSchema(task.schemaVersion.schemaJson);
   if (!parsed.ok) {
@@ -342,7 +351,9 @@ function ReviewDetail({
                   </div>
                 ) : null}
 
-                {annotation.status === "SUBMITTED" && task.status === "SUBMITTED" ? (
+                {annotation.status === "SUBMITTED" &&
+                task.status === "SUBMITTED" &&
+                canDecide ? (
                   <div style={{ marginTop: "0.8rem" }}>
                     <BeginReviewButton annotationId={annotation.id} />
                   </div>
@@ -357,6 +368,7 @@ function ReviewDetail({
                       annotationId={annotation.id}
                       expectedRevision={annotation.revision}
                       annotatorName={annotation.annotator.displayName}
+                      afterDecisionHref={afterDecisionHref}
                     />
                   </div>
                 ) : null}

@@ -81,10 +81,12 @@ export function ReviewDecisionForm({
   annotationId,
   expectedRevision,
   annotatorName,
+  afterDecisionHref,
 }: {
   annotationId: string;
   expectedRevision: number;
   annotatorName: string;
+  afterDecisionHref: string;
 }) {
   const router = useRouter();
   const [decision, setDecision] = useState<(typeof DECISIONS)[number]["value"]>("PASS");
@@ -120,7 +122,7 @@ export function ReviewDecisionForm({
       const body = (await response.json()) as { taskStatus: string };
       setMessage(`Decision recorded. Task is now ${body.taskStatus.toLowerCase().replaceAll("_", " ")}.`);
       setFeedback("");
-      router.refresh();
+      router.replace(afterDecisionHref);
     } catch {
       setError("The review decision failed before it reached the server.");
     } finally {
