@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { ProjectChrome } from "@/components/project/ProjectChrome";
 import { ReleasePublisher } from "@/components/ReleasePublisher";
+import { ReleaseExportButtons } from "@/components/ReleaseExportButtons";
 import { EmptyState } from "@/components/EmptyState";
 import { requireProjectPage } from "@/auth/project-page";
 import { isManager } from "@/auth/permissions";
@@ -156,32 +157,10 @@ export default async function ReleasesPage({
                       </p>
                     </div>
 
-                    <div className="cluster">
-                      <a
-                        className="btn btn-primary btn-sm"
-                        href={`/api/releases/${release.id}/export?format=bundle`}
-                      >
-                        Download release bundle
-                      </a>
-                      <a
-                        className="btn btn-secondary btn-sm"
-                        href={`/api/releases/${release.id}/export?format=jsonl`}
-                      >
-                        JSONL
-                      </a>
-                      <a
-                        className="btn btn-secondary btn-sm"
-                        href={`/api/releases/${release.id}/export?format=csv`}
-                      >
-                        CSV
-                      </a>
-                      <a
-                        className="btn btn-ghost btn-sm"
-                        href={`/api/releases/${release.id}/export?format=manifest`}
-                      >
-                        Manifest JSON
-                      </a>
-                    </div>
+                    <ReleaseExportButtons
+                      releaseId={release.id}
+                      versionNumber={release.versionNumber}
+                    />
 
                     <details className="panel panel-pad">
                       <summary className="field-label" style={{ cursor: "pointer" }}>

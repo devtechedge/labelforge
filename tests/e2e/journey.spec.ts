@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { unzipSync } from "fflate";
+import { readFileSync } from "node:fs";
 
 async function demoLogin(page: Page, role: "Owner" | "Manager" | "Reviewer" | "Annotator") {
   await page.goto("/login");
@@ -110,14 +111,12 @@ test.describe("fresh project journey", () => {
     await owner.getByRole("button", { name: "Publish release" }).click();
     await owner.getByRole("button", { name: "Publish immutable release" }).click();
     await expect(owner.getByText(/Release v1 published/)).toBeVisible();
-    const bundleHref = await owner
-      .getByRole("link", { name: "Download release bundle" })
-      .first()
-      .getAttribute("href");
-    expect(bundleHref).toBeTruthy();
-    const response = await ownerContext.request.get(bundleHref!);
-    expect(response.status()).toBe(200);
-    const files = unzipSync(new Uint8Array(await response.body()));
+    const downloadPromise = owner.waitForEvent("download");
+    await owner.getByRole("button", { name: "Download release bundle" }).click();
+    const download = await downloadPromise;
+    const downloadPath = await download.path();
+    expect(downloadPath).toBeTruthy();
+    const files = unzipSync(new Uint8Array(readFileSync(downloadPath!)));
     const manifest = JSON.parse(new TextDecoder().decode(files["manifest.json"]));
     expect(manifest.counts.recordCount).toBe(1);
     expect(manifest.counts.excludedCount).toBe(11);
