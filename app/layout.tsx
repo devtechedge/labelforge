@@ -1,18 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Gloock, JetBrains_Mono, Schibsted_Grotesk } from "next/font/google";
+import { Instrument_Sans, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 
 import "./globals.css";
 
-const sans = Schibsted_Grotesk({
+const sans = Instrument_Sans({
   subsets: ["latin"],
-  variable: "--font-schibsted",
+  variable: "--font-instrument-sans",
   display: "swap",
 });
 
-const display = Gloock({
+const display = Instrument_Serif({
   weight: "400",
+  style: ["normal", "italic"],
   subsets: ["latin"],
-  variable: "--font-gloock",
+  variable: "--font-instrument-serif",
   display: "swap",
 });
 
@@ -39,12 +40,21 @@ export const metadata: Metadata = {
       "A collaborative workflow for turning raw structured records into reviewed, versioned annotation datasets.",
     type: "website",
     url: appUrl,
+    images: [
+      {
+        url: "/social-preview.png",
+        width: 1280,
+        height: 640,
+        alt: "LabelForge: raw records in, reviewed evidence out",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "LabelForge",
     description:
       "A collaborative, auditable workflow for structured data annotation.",
+    images: ["/social-preview.png"],
   },
   icons: {
     icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
@@ -54,7 +64,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f2ecdf",
+  themeColor: "#f1efe8",
   colorScheme: "light",
   width: "device-width",
   initialScale: 1,
