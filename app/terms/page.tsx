@@ -11,7 +11,7 @@ export default function TermsPage() {
   return (
     <>
       <PublicHeader />
-      <main id="main-content" className="page container-narrow stack-lg">
+      <main id="main-content" className="page container-narrow prose">
         <div className="stack">
           <p className="eyebrow">Policy</p>
           <h1 className="display-md">Terms of use</h1>

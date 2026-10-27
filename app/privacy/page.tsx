@@ -11,7 +11,7 @@ export default function PrivacyPage() {
   return (
     <>
       <PublicHeader />
-      <main id="main-content" className="page container-narrow stack-lg">
+      <main id="main-content" className="page container-narrow prose">
         <div className="stack">
           <p className="eyebrow">Policy</p>
           <h1 className="display-md">Privacy and retention</h1>
