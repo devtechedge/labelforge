@@ -2,7 +2,7 @@
 
 An auditable, collaborative workbench for turning CSV and JSONL records into reviewed, versioned datasets.
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-7c3aed)](https://labelforge-app.vercel.app)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-a63f24)](https://labelforge-app.vercel.app)
 [![CI](https://github.com/devtechedge/labelforge/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/devtechedge/labelforge/actions/workflows/ci.yml)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
@@ -37,6 +37,10 @@ Demo sign-in buttons appear only when `DEMO_MODE=true`. Demo identities are fixe
 | Quality measures | Release history |
 | --- | --- |
 | ![Quality page](docs/screenshots/03-quality.png) | ![Release history](docs/screenshots/04-releases.png) |
+
+## Interface
+
+The interface is a field ledger: warm paper, ink, oxide, square geometry, editorial serif headings, and monospaced metadata. Light and dark themes share the same hierarchy. The workbench is a three-panel console with a scrollable queue, a readable source record, and a pinned annotation and action panel. Controls are built from native form elements, keyboard focus stays visible, and the layout is checked with axe at mobile and desktop widths.
 
 ## What it does
 
