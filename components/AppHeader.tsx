@@ -18,24 +18,27 @@ export function AppHeader({ user }: { user: SessionUser }) {
   return (
     <header className="app-header">
       <div className="container app-header-inner">
-        <Brand href="/workspaces" />
-        <nav className="app-nav" aria-label="Workspace navigation">
-          <Link href="/workspaces">Workspaces</Link>
+        <div className="cluster" style={{ gap: "1.1rem" }}>
+          <Brand href="/workspaces" />
+          <span className="workbench-divider" aria-hidden="true" />
+          <nav className="app-nav" aria-label="Workspace navigation">
+            <Link href="/workspaces">Workspaces</Link>
+          </nav>
+        </div>
+        <div className="app-nav">
           <ThemeToggle />
           <div className="user-chip">
             <span className="avatar" aria-hidden="true">
               {initials(user.displayName)}
             </span>
-            <span>
-              <span className="user-email">{user.displayName}</span>
-            </span>
+            <span className="user-email">{user.displayName}</span>
             <form action={logoutAction}>
               <button className="btn btn-ghost btn-sm" type="submit">
                 Sign out
               </button>
             </form>
           </div>
-        </nav>
+        </div>
       </div>
     </header>
   );

@@ -8,16 +8,14 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
     <div className="auth-layout">
       <aside className="auth-aside">
         <Brand href="/" />
-        <div className="stack">
-          <p className="eyebrow" style={{ color: "#c6bbae" }}>
-            Collaborative data annotation
-          </p>
+        <div className="auth-ledger">
+          <p className="auth-kicker">Collaborative data annotation</p>
           <p className="auth-quote">
             A label is a claim. A reviewed label is <em>evidence</em>.
           </p>
-          <p className="small" style={{ color: "#d8cec0", maxWidth: "34ch" }}>
-            LabelForge keeps the record, the schema, the reviewer decision, and the
-            published dataset tied together.
+          <p className="auth-aside-copy">
+            LabelForge keeps the record, the schema, the reviewer decision, and
+            the published dataset tied together.
           </p>
         </div>
         <div className="auth-aside-meta">

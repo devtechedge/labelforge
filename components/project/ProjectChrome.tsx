@@ -54,17 +54,19 @@ export function ProjectChrome({
             <span>{projectName}</span>
           </nav>
           <div className="project-heading">
-            <div className="stack" style={{ gap: "0.5rem" }}>
-              <p className="eyebrow">Project / {annotationMode === "MULTI" ? "Multi-annotator" : "Single annotator"}</p>
+            <div className="project-title">
+              <p className="eyebrow">
+                Project / {annotationMode === "MULTI" ? "Multi-annotator" : "Single annotator"}
+              </p>
               <h1>{projectName}</h1>
-              <p className="small muted" style={{ maxWidth: "70ch" }}>
+              <p className="small muted">
                 {description || "No project description."}
               </p>
             </div>
-            <div className="cluster">
+            <div className="project-badges">
               <span
                 className={`badge ${
-                  projectStatus === "ARCHIVED" ? "status-disputed" : "status-accepted"
+                  projectStatus === "ARCHIVED" ? "status-archived" : "status-active"
                 }`}
               >
                 {projectStatus === "ARCHIVED" ? "Archived" : "Active"}
