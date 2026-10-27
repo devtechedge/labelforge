@@ -70,15 +70,25 @@ export default async function SchemaPage({
             Schema published. You can now generate tasks from a dataset version.
           </div>
         ) : null}
-        <div className="stack">
-          <p className="eyebrow">Immutable question set</p>
-          <h2 className="display-md">Schema versions</h2>
-          <p className="lede small">
-            A schema version never changes after creation. Publishing makes it
-            available for task generation. Existing tasks keep the exact version
-            they were created with.
-          </p>
+        <div className="page-intro">
+          <div>
+            <p className="eyebrow">Immutable question set</p>
+            <h2 className="display-md">Schema versions</h2>
+            <p className="intro-meta">
+              <span>
+                {schemas.length} version{schemas.length === 1 ? "" : "s"}
+              </span>
+              <span>{publishedSchemas.length} published</span>
+              <span>Tasks keep their pinned version</span>
+            </p>
+          </div>
         </div>
+
+        <p className="section-lede">
+          A schema version never changes after creation. Publishing makes it
+          available for task generation. Existing tasks keep the exact version
+          they were created with.
+        </p>
 
         <section className="card card-pad stack">
           <div className="spread">
@@ -110,7 +120,9 @@ export default async function SchemaPage({
               <p className="eyebrow">History</p>
               <h2 className="display-sm">All versions</h2>
             </div>
-            <p className="small muted">{schemas.length} versions</p>
+            <p className="small muted">
+              {schemas.length} version{schemas.length === 1 ? "" : "s"}
+            </p>
           </div>
           {schemas.length === 0 ? (
             <p className="small muted">

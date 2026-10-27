@@ -22,6 +22,10 @@ export default async function QualityPage({
   const quality = await getProjectQuality(projectId);
   if (!quality) notFound();
 
+  const taskEntries = Object.entries(quality.taskStatusCounts).filter(([, count]) => count > 0);
+  const decisionEntries = Object.entries(quality.reviewDecisionCounts);
+  const decisionTotal = decisionEntries.reduce((sum, [, count]) => sum + count, 0);
+
   return (
     <ProjectChrome
       workspaceId={workspaceId}
@@ -34,14 +38,16 @@ export default async function QualityPage({
       description={access.project.description}
     >
       <div className="stack-lg">
-        <div className="stack">
-          <p className="eyebrow">Measured, not invented</p>
-          <h2 className="display-md">Quality and agreement</h2>
-          <p className="lede small">
-            Counts come from stored task and annotation states. Agreement is only
-            reported when the sample supports it. Every score carries its sample
-            size and limitations.
-          </p>
+        <div className="page-intro">
+          <div>
+            <p className="eyebrow">Measured, not invented</p>
+            <h2 className="display-md">Quality and agreement</h2>
+            <p className="intro-meta">
+              <span>Stored task states</span>
+              <span>Paired annotations only</span>
+              <span>No fabricated score</span>
+            </p>
+          </div>
         </div>
 
         {quality.totals.totalTasks === 0 ? (
@@ -76,39 +82,60 @@ export default async function QualityPage({
 
             <div className="grid-2">
               <section className="card card-pad stack">
-                <p className="eyebrow">Workflow state</p>
-                <h3 className="display-sm">Task distribution</h3>
-                <ul className="limit-list">
-                  {Object.entries(quality.taskStatusCounts)
-                    .filter(([, count]) => count > 0)
-                    .map(([status, count]) => (
-                      <li key={status}>
-                        <span>
+                <div className="spread">
+                  <div>
+                    <p className="eyebrow">Workflow state</p>
+                    <h3 className="display-sm">Task distribution</h3>
+                  </div>
+                  <span className="mono tiny muted">{quality.totals.totalTasks} total</span>
+                </div>
+                <div className="bar-list">
+                  {taskEntries.map(([status, count]) => {
+                    const shared = Math.round((count / quality.totals.totalTasks) * 100);
+                    return (
+                      <div className="bar-row" key={status}>
+                        <span className="bar-label">
                           {quality.taskStatusLabels[
                             status as keyof typeof quality.taskStatusLabels
                           ] ?? status}
                         </span>
-                        <strong>{count}</strong>
-                      </li>
-                    ))}
-                </ul>
+                        <div className="bar-track">
+                          <div className="bar-fill" style={{ width: `${shared}%` }} />
+                        </div>
+                        <span className="bar-value">{count}</span>
+                      </div>
+                    );
+                  })}
+                </div>
               </section>
+
               <section className="card card-pad stack">
-                <p className="eyebrow">Review outcomes</p>
-                <h3 className="display-sm">Decisions recorded</h3>
-                {Object.keys(quality.reviewDecisionCounts).length === 0 ? (
+                <div className="spread">
+                  <div>
+                    <p className="eyebrow">Review outcomes</p>
+                    <h3 className="display-sm">Decisions recorded</h3>
+                  </div>
+                  <span className="mono tiny muted">{decisionTotal} total</span>
+                </div>
+                {decisionEntries.length === 0 ? (
                   <p className="small muted">No review decisions have been recorded.</p>
                 ) : (
-                  <ul className="limit-list">
-                    {Object.entries(quality.reviewDecisionCounts).map(
-                      ([decision, count]) => (
-                        <li key={decision}>
-                          <span>{decision.toLowerCase().replaceAll("_", " ")}</span>
-                          <strong>{count}</strong>
-                        </li>
-                      ),
-                    )}
-                  </ul>
+                  <div className="bar-list">
+                    {decisionEntries.map(([decision, count]) => {
+                      const shared = Math.round((count / decisionTotal) * 100);
+                      return (
+                        <div className="bar-row" key={decision}>
+                          <span className="bar-label">
+                            {decision.toLowerCase().replaceAll("_", " ")}
+                          </span>
+                          <div className="bar-track">
+                            <div className="bar-fill" style={{ width: `${shared}%` }} />
+                          </div>
+                          <span className="bar-value">{count}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
                 <p className="tiny muted">
                   {quality.totals.reviewPending} tasks are submitted or in review.
@@ -129,10 +156,8 @@ export default async function QualityPage({
                     <div className="spread">
                       <div>
                         <p className="eyebrow">Agreement</p>
-                        <h3 className="display-sm">
-                          Schema v{group.versionNumber}
-                        </h3>
-                        <p className="tiny muted">
+                        <h3 className="display-sm">Schema v{group.versionNumber}</h3>
+                        <p className="mono tiny muted">
                           {group.comparableTasks} tasks with two or more non-draft
                           annotations
                         </p>
@@ -156,8 +181,8 @@ export default async function QualityPage({
                             <div className="spread">
                               <div>
                                 <p className="field-label">{field.fieldLabel}</p>
-                                <p className="tiny muted">
-                                  {field.type.replaceAll("_", " ")} ·{" "}
+                                <p className="mono tiny muted">
+                                  {field.type.replaceAll("_", " ")} /{" "}
                                   {field.comparablePairs} comparable pairs
                                 </p>
                               </div>
@@ -225,7 +250,7 @@ export default async function QualityPage({
 
                             {field.metric.limitations.length > 0 ? (
                               <details>
-                                <summary className="tiny muted" style={{ cursor: "pointer" }}>
+                                <summary className="mono tiny muted" style={{ cursor: "pointer" }}>
                                   Limitations
                                 </summary>
                                 <ul className="metric-limits">
@@ -252,7 +277,8 @@ export default async function QualityPage({
                 overlap with a 0.5 intersection-over-union match. Structured text,
                 number, and boolean fields have no defined agreement metric here.
                 Scores are descriptive of this project sample, not a model quality
-                claim. {quality.sampleTruncated
+                claim.{" "}
+                {quality.sampleTruncated
                   ? "The annotation sample hit the calculation ceiling; results are incomplete."
                   : `This page evaluated ${quality.annotationSample} non-draft annotations.`}
               </p>

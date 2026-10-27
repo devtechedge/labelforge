@@ -108,24 +108,27 @@ export default async function TasksPage({
       description={access.project.description}
     >
       <div className="stack-lg">
-        <div className="spread">
-          <div className="stack">
+        <div className="page-intro">
+          <div>
             <p className="eyebrow">Task inventory</p>
             <h2 className="display-md">
               {annotator && !manager ? "Your queue" : "Distribution and status"}
             </h2>
-            <p className="muted small">
-              {result.total} tasks in this view. Statuses and counts come directly
-              from persisted workflow records.
+            <p className="intro-meta">
+              <span>{result.total} tasks in this view</span>
+              <span>Persisted workflow state</span>
+              {status ? <span>Filtered by {TASK_STATUS_LABELS[status as keyof typeof TASK_STATUS_LABELS]}</span> : null}
             </p>
           </div>
           {manager ? (
-            <Link
-              className="btn btn-secondary"
-              href={`/workspaces/${workspaceId}/projects/${projectId}/schema`}
-            >
-              Generate tasks
-            </Link>
+            <div className="intro-actions">
+              <Link
+                className="btn btn-secondary"
+                href={`/workspaces/${workspaceId}/projects/${projectId}/schema`}
+              >
+                Generate tasks
+              </Link>
+            </div>
           ) : null}
         </div>
 
@@ -164,14 +167,16 @@ export default async function TasksPage({
               </select>
             </div>
           ) : null}
-          <button className="btn btn-secondary btn-sm" type="submit">
-            Apply filters
-          </button>
-          {status || query.assignee ? (
-            <Link className="btn btn-ghost btn-sm" href={base}>
-              Clear
-            </Link>
-          ) : null}
+          <div className="filter-actions">
+            <button className="btn btn-secondary btn-sm" type="submit">
+              Apply filters
+            </button>
+            {status || query.assignee ? (
+              <Link className="btn btn-ghost btn-sm" href={base}>
+                Clear
+              </Link>
+            ) : null}
+          </div>
         </form>
 
         {result.tasks.length === 0 ? (

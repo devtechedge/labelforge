@@ -47,15 +47,23 @@ export default async function ReleasesPage({
       description={access.project.description}
     >
       <div className="stack-lg">
-        <div className="stack">
-          <p className="eyebrow">Immutable outputs</p>
-          <h2 className="display-md">Dataset releases</h2>
-          <p className="lede small">
-            Each release is a stored snapshot with deterministic JSONL and
-            formula-safe CSV exports, a provenance manifest, and SHA-256 checksums.
-            Re-downloading a release returns the same content.
-          </p>
+        <div className="page-intro">
+          <div>
+            <p className="eyebrow">Immutable outputs</p>
+            <h2 className="display-md">Dataset releases</h2>
+            <p className="intro-meta">
+              <span>Deterministic JSONL and CSV</span>
+              <span>SHA-256 manifests</span>
+              <span>{releaseData.total} published</span>
+            </p>
+          </div>
         </div>
+
+        <p className="section-lede">
+          Each release is a stored snapshot with deterministic JSONL and
+          formula-safe CSV exports, a provenance manifest, and SHA-256 checksums.
+          Re-downloading a release returns the same content.
+        </p>
 
         {isManager(access.roles) ? (
           <ReleasePublisher
@@ -81,7 +89,9 @@ export default async function ReleasesPage({
               <p className="eyebrow">History</p>
               <h3 className="display-sm">Published snapshots</h3>
             </div>
-            <p className="small muted">{releaseData.total} releases</p>
+            <p className="small muted">
+              {releaseData.total} release{releaseData.total === 1 ? "" : "s"}
+            </p>
           </div>
 
           {releaseData.releases.length === 0 ? (
@@ -110,12 +120,14 @@ export default async function ReleasesPage({
                   schema?: { versionNumber?: number };
                 };
                 return (
-                  <article className="card card-pad stack" key={release.id}>
-                    <div className="spread">
+                  <article className="release-card" key={release.id}>
+                    <div className="release-head">
                       <div>
-                        <p className="eyebrow">Release v{release.versionNumber}</p>
-                        <h3 className="display-sm">
-                          {release.recordCount} records ·{" "}
+                        <p className="eyebrow">
+                          Release / v{release.versionNumber}
+                        </p>
+                        <h3>
+                          {release.recordCount} records /{" "}
                           {formatPercent(
                             release.recordCount + release.excludedCount === 0
                               ? null
@@ -125,7 +137,7 @@ export default async function ReleasesPage({
                           )}{" "}
                           included
                         </h3>
-                        <p className="tiny muted">
+                        <p className="mono tiny muted">
                           Published {formatDateTime(release.publishedAt)} by{" "}
                           {release.createdBy.displayName}
                         </p>
@@ -133,64 +145,70 @@ export default async function ReleasesPage({
                       <span className="badge status-accepted">Published</span>
                     </div>
 
-                    <div className="meta-row">
-                      <span>Dataset v{manifest.dataset?.versionNumber ?? "?"}</span>
-                      <span>Schema v{manifest.schema?.versionNumber ?? "?"}</span>
-                      <span>{release.annotationCount} annotations referenced</span>
-                      <span>{release.excludedCount} excluded tasks</span>
-                      <span className="mono">
-                        policy {manifest.selectionPolicy ?? release.selectionPolicy}
-                      </span>
-                    </div>
+                    <div className="release-body">
+                      <div className="meta-row">
+                        <span>
+                          Dataset v{manifest.dataset?.versionNumber ?? "?"}
+                        </span>
+                        <span>Schema v{manifest.schema?.versionNumber ?? "?"}</span>
+                        <span>{release.annotationCount} annotations referenced</span>
+                        <span>{release.excludedCount} excluded tasks</span>
+                        <span className="mono">
+                          policy {manifest.selectionPolicy ?? release.selectionPolicy}
+                        </span>
+                      </div>
 
-                    <div className="panel panel-pad stack" style={{ gap: "0.4rem" }}>
-                      <p className="field-label">SHA-256 checksums</p>
-                      <p className="mono tiny" style={{ overflowWrap: "anywhere" }}>
-                        JSONL · {release.checksum}
-                      </p>
-                      <p className="mono tiny" style={{ overflowWrap: "anywhere" }}>
-                        CSV · {release.csvChecksum}
-                      </p>
-                      <p className="tiny muted">
-                        The export route verifies these checksums before sending
-                        bytes.
-                      </p>
-                    </div>
+                      <div className="checksum-block">
+                        <p className="field-label">SHA-256 checksums</p>
+                        <div className="checksum-line">
+                          <span>JSONL</span>
+                          <code>{release.checksum}</code>
+                        </div>
+                        <div className="checksum-line">
+                          <span>CSV</span>
+                          <code>{release.csvChecksum}</code>
+                        </div>
+                        <p className="tiny" style={{ color: "inherit", opacity: 0.7 }}>
+                          The export route verifies these checksums before sending
+                          bytes.
+                        </p>
+                      </div>
 
-                    <ReleaseExportButtons
-                      releaseId={release.id}
-                      versionNumber={release.versionNumber}
-                    />
+                      <ReleaseExportButtons
+                        releaseId={release.id}
+                        versionNumber={release.versionNumber}
+                      />
 
-                    <details className="panel panel-pad">
-                      <summary className="field-label" style={{ cursor: "pointer" }}>
-                        Inspect provenance manifest
-                      </summary>
-                      <pre
-                        className="code-card"
-                        style={{ marginTop: "0.7rem", maxHeight: "26rem" }}
-                      >
-                        {JSON.stringify(release.manifest, null, 2)}
-                      </pre>
-                    </details>
-
-                    {manifest.counts?.exclusions &&
-                    Object.values(manifest.counts.exclusions).some((count) => count > 0) ? (
-                      <details>
-                        <summary className="tiny muted" style={{ cursor: "pointer" }}>
-                          Exclusions by reason
+                      <details className="panel panel-pad">
+                        <summary className="field-label" style={{ cursor: "pointer" }}>
+                          Inspect provenance manifest
                         </summary>
-                        <ul className="metric-limits">
-                          {Object.entries(manifest.counts.exclusions)
-                            .filter(([, count]) => count > 0)
-                            .map(([reason, count]) => (
-                              <li key={reason}>
-                                {reason.replaceAll("_", " ")}: {count}
-                              </li>
-                            ))}
-                        </ul>
+                        <pre
+                          className="code-card"
+                          style={{ marginTop: "0.7rem", maxHeight: "26rem" }}
+                        >
+                          {JSON.stringify(release.manifest, null, 2)}
+                        </pre>
                       </details>
-                    ) : null}
+
+                      {manifest.counts?.exclusions &&
+                      Object.values(manifest.counts.exclusions).some((count) => count > 0) ? (
+                        <details>
+                          <summary className="mono tiny muted" style={{ cursor: "pointer" }}>
+                            Exclusions by reason
+                          </summary>
+                          <ul className="metric-limits">
+                            {Object.entries(manifest.counts.exclusions)
+                              .filter(([, count]) => count > 0)
+                              .map(([reason, count]) => (
+                                <li key={reason}>
+                                  {reason.replaceAll("_", " ")}: {count}
+                                </li>
+                              ))}
+                          </ul>
+                        </details>
+                      ) : null}
+                    </div>
                   </article>
                 );
               })}

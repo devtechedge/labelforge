@@ -47,15 +47,23 @@ export default async function ImportPage({
       description={access.project.description}
     >
       <div className="stack-lg">
-        <div className="stack">
-          <p className="eyebrow">Dataset intake</p>
-          <h2 className="display-md">Import, validate, commit</h2>
-          <p className="lede small">
-            The preview is parsed on the server from the uploaded bytes. Commit
-            writes valid rows only, in source order, as a new immutable dataset
-            version.
-          </p>
+        <div className="page-intro">
+          <div>
+            <p className="eyebrow">Dataset intake</p>
+            <h2 className="display-md">Import, validate, commit</h2>
+            <p className="intro-meta">
+              <span>4 MB per file</span>
+              <span>10,000 rows</span>
+              <span>UTF-8 / no silent truncation</span>
+            </p>
+          </div>
         </div>
+
+        <p className="section-lede">
+          The preview is parsed on the server from the uploaded bytes. Commit
+          writes valid rows only, in source order, as a new immutable dataset
+          version.
+        </p>
 
         <div className="panel panel-pad">
           <p className="small muted">

@@ -77,15 +77,23 @@ export default async function ReviewPage({
       description={access.project.description}
     >
       <div className="stack-lg">
-        <div className="stack">
-          <p className="eyebrow">Human decisions</p>
-          <h2 className="display-md">Review and resolve</h2>
-          <p className="lede small">
-            Compare submitted answers, leave specific feedback, accept or return
-            work, and send disagreements to evidence-based adjudication. Every
-            decision is tied to the annotation revision the reviewer saw.
-          </p>
+        <div className="page-intro">
+          <div>
+            <p className="eyebrow">Human decisions</p>
+            <h2 className="display-md">Review and resolve</h2>
+            <p className="intro-meta">
+              <span>{queue.total} awaiting decision</span>
+              <span>{adjudicationQueue.total} disputed</span>
+              <span>Decision bound to annotation revision</span>
+            </p>
+          </div>
         </div>
+
+        <p className="section-lede">
+          Compare submitted answers, leave specific feedback, accept or return
+          work, and send disagreements to evidence-based adjudication. Every
+          decision is tied to the annotation revision the reviewer saw.
+        </p>
 
         {query.decided ? (
           <div className="success-note" role="status">
@@ -140,24 +148,29 @@ export default async function ReviewPage({
               </p>
             ) : (
               <ul className="list-reset stack" style={{ gap: "0.4rem" }}>
-                {queue.tasks.map((task) => {
+                {queue.tasks.map((task, index) => {
                   const submitted = task.annotations.filter(
                     (annotation) => annotation.status === "SUBMITTED",
                   ).length;
                   return (
                     <li key={task.id}>
                       <Link
-                        className={`queue-item ${task.id === selected?.id ? "" : ""}`}
+                        className="queue-item"
                         href={`${base}?task=${task.id}&page=${page}`}
                         aria-current={task.id === selected?.id ? "true" : undefined}
                       >
-                        <span className="queue-id">
-                          {task.datasetRecord.sourceId} · schema v
-                          {task.schemaVersion.versionNumber}
+                        <span className="queue-number">
+                          {String(index + 1).padStart(2, "0")}
                         </span>
-                        <span className="tiny muted">
-                          {task.status.toLowerCase().replaceAll("_", " ")} ·{" "}
-                          {submitted} submitted · {formatRelative(task.updatedAt)}
+                        <span className="queue-main">
+                          <span className="queue-id">
+                            {task.datasetRecord.sourceId} / schema v
+                            {task.schemaVersion.versionNumber}
+                          </span>
+                          <span className="queue-status">
+                            {task.status.toLowerCase().replaceAll("_", " ")} /{" "}
+                            {submitted} submitted / {formatRelative(task.updatedAt)}
+                          </span>
                         </span>
                       </Link>
                     </li>
@@ -275,17 +288,22 @@ function ReviewDetail({
           </div>
         </div>
         <div className="record-body">
-          {Object.entries(record).map(([key, value]) => (
+          {Object.entries(record).map(([key, value], index) => (
             <div className="source-field" key={key}>
-              <span className="source-label">{key}</span>
-              <div className="source-text">
-                {typeof value === "string"
-                  ? value
-                  : typeof value === "number" || typeof value === "boolean"
-                    ? String(value)
-                    : value === null
-                      ? "No value"
-                      : JSON.stringify(value, null, 2)}
+              <span className="source-index">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <div>
+                <span className="source-label">{key}</span>
+                <div className="source-text">
+                  {typeof value === "string"
+                    ? value
+                    : typeof value === "number" || typeof value === "boolean"
+                      ? String(value)
+                      : value === null
+                        ? "No value"
+                        : JSON.stringify(value, null, 2)}
+                </div>
               </div>
             </div>
           ))}

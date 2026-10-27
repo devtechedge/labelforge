@@ -99,18 +99,21 @@ export default async function AdjudicatePage({
       description={access.project.description}
     >
       <div className="stack-lg">
-        <div className="spread">
-          <div className="stack">
+        <div className="page-intro">
+          <div>
             <p className="eyebrow">Evidence-based resolution</p>
-            <h2 className="display-md">Adjudicate {detail.task.datasetRecord.sourceId}</h2>
-            <p className="muted small">
-              Compare every annotation, choose or correct a final answer, and
-              explain the decision. The history is never overwritten.
+            <h2 className="display-md">
+              Adjudicate {detail.task.datasetRecord.sourceId}
+            </h2>
+            <p className="intro-meta">
+              <span>Compare every annotation</span>
+              <span>Choose or correct the final answer</span>
+              <span>History is never overwritten</span>
             </p>
           </div>
-          <div className="cluster">
+          <div className="intro-actions">
             <StatusBadge status={detail.task.status} />
-            <span className="mono tiny">task v{detail.task.version}</span>
+            <span className="mono tiny muted">task v{detail.task.version}</span>
           </div>
         </div>
 
@@ -131,17 +134,22 @@ export default async function AdjudicatePage({
               <span className="tiny muted">schema v{detail.task.schemaVersion.versionNumber}</span>
             </div>
             <div className="record-body">
-              {Object.entries(record).map(([key, value]) => (
+              {Object.entries(record).map(([key, value], index) => (
                 <div className="source-field" key={key}>
-                  <span className="source-label">{key}</span>
-                  <div className="source-text">
-                    {typeof value === "string"
-                      ? value
-                      : typeof value === "number" || typeof value === "boolean"
-                        ? String(value)
-                        : value === null
-                          ? "No value"
-                          : JSON.stringify(value, null, 2)}
+                  <span className="source-index">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <div>
+                    <span className="source-label">{key}</span>
+                    <div className="source-text">
+                      {typeof value === "string"
+                        ? value
+                        : typeof value === "number" || typeof value === "boolean"
+                          ? String(value)
+                          : value === null
+                            ? "No value"
+                            : JSON.stringify(value, null, 2)}
+                    </div>
                   </div>
                 </div>
               ))}
