@@ -117,6 +117,9 @@ function FieldControl({
               />
               <span>
                 <strong>{option.label}</strong>
+                <span className="option-value" aria-hidden="true">
+                  {option.value}
+                </span>
               </span>
             </label>
           ))}

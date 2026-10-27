@@ -383,25 +383,33 @@ export function AnnotationWorkbench({ data }: { data: WorkbenchData }) {
   }, [conflict, saveState, relativeSaved]);
 
   const records = Object.entries(task.record);
+  const finishedInQueue = data.queue.filter((item) =>
+    ["SUBMITTED", "IN_REVIEW", "ACCEPTED", "RESOLVED", "DISPUTED", "ADJUDICATION"].includes(
+      item.annotationStatus ?? "",
+    ),
+  ).length;
+  const queueCompletion =
+    data.queue.length === 0 ? 0 : (finishedInQueue / data.queue.length) * 100;
 
   return (
     <div className="workbench-page">
       <div className="workbench-header">
         <div className="container workbench-header-inner">
-          <div className="cluster">
+          <div className="workbench-meta">
             <Link
-              className="btn btn-ghost btn-sm"
+              className="back-link"
               href={`/workspaces/${data.workspaceId}/projects/${data.projectId}/tasks`}
             >
-              Back to tasks
+              Tasks
             </Link>
-            <span className="tiny muted">
+            <span className="workbench-divider" aria-hidden="true" />
+            <span className="small muted">
               {data.workspaceName} / {data.projectName}
             </span>
           </div>
-          <div className="cluster">
-            <span className="tiny muted mono">
-              {task.sourceId} · schema v{task.schemaVersionNumber}
+          <div className="workbench-meta">
+            <span className="mono tiny muted">
+              {task.sourceId} / schema v{task.schemaVersionNumber}
             </span>
             <StatusBadge status={task.status} />
             <span className="save-state" data-state={saveState} aria-live="polite">
@@ -419,22 +427,40 @@ export function AnnotationWorkbench({ data }: { data: WorkbenchData }) {
               {data.queue.length} active task{data.queue.length === 1 ? "" : "s"}
             </p>
           </div>
+          <div className="queue-summary">
+            <div className="spread" style={{ gap: "0.5rem" }}>
+              <span className="tiny muted">Progress</span>
+              <span className="mono tiny">
+                {finishedInQueue} / {data.queue.length}
+              </span>
+            </div>
+            <div className="progress-track">
+              <div
+                className="progress-fill"
+                style={{ width: `${queueCompletion}%` }}
+              />
+            </div>
+          </div>
           <ul className="queue-list">
-            {data.queue.map((item) => (
+            {data.queue.map((item, index) => (
               <li key={item.id}>
                 <Link
                   className="queue-item"
                   href={nextUrl(item.id)}
                   aria-current={item.id === task.id ? "true" : undefined}
                 >
-                  <span className="queue-id">
-                    {item.sourceId}
-                    {item.id === task.id ? " · current" : ""}
+                  <span className="queue-number">
+                    {String(index + 1).padStart(2, "0")}
                   </span>
-                  <span className="tiny muted">
-                    {TASK_STATUS_LABELS[item.status as keyof typeof TASK_STATUS_LABELS] ??
-                      item.status}
-                    {item.annotationStatus ? ` / ${item.annotationStatus.toLowerCase()}` : ""}
+                  <span className="queue-main">
+                    <span className="queue-id">{item.sourceId}</span>
+                    <span className="queue-status">
+                      {TASK_STATUS_LABELS[item.status as keyof typeof TASK_STATUS_LABELS] ??
+                        item.status}
+                      {item.annotationStatus
+                        ? ` / ${item.annotationStatus.toLowerCase().replaceAll("_", " ")}`
+                        : ""}
+                    </span>
                   </span>
                 </Link>
               </li>
@@ -510,19 +536,28 @@ export function AnnotationWorkbench({ data }: { data: WorkbenchData }) {
                   {task.sourceId}
                 </p>
               </div>
-              <span className="tiny muted">source order {task.sourceOrder}</span>
+              <span className="record-meta">source order {task.sourceOrder}</span>
             </div>
             <div className="record-body">
               {records.length === 0 ? (
                 <p className="muted">This record has no fields.</p>
               ) : (
-                records.map(([key, value]) => (
+                records.map(([key, value], index) => (
                   <div className="source-field" key={key}>
-                    <span className="source-label">{key}</span>
-                    <div className="source-text">{renderRecordValue(value)}</div>
+                    <span className="source-index">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <div>
+                      <span className="source-label">{key}</span>
+                      <div className="source-text">{renderRecordValue(value)}</div>
+                    </div>
                   </div>
                 ))
               )}
+            </div>
+            <div className="record-footer">
+              <span>Schema v{task.schemaVersionNumber} pinned to this task</span>
+              <span>{records.length} source fields</span>
             </div>
           </div>
 
@@ -530,6 +565,9 @@ export function AnnotationWorkbench({ data }: { data: WorkbenchData }) {
             <div className="record-card">
               <div className="record-head">
                 <p className="eyebrow">Review history</p>
+                <span className="record-meta">
+                  {data.annotation.reviews.length} decisions
+                </span>
               </div>
               <div className="record-body feedback-list">
                 {data.annotation.reviews.map((review) => (
@@ -539,7 +577,7 @@ export function AnnotationWorkbench({ data }: { data: WorkbenchData }) {
                         {review.decision.toLowerCase().replaceAll("_", " ")}
                       </strong>
                       <span className="tiny muted">
-                        {review.reviewerName} · {formatRelative(review.createdAt)}
+                        {review.reviewerName} / {formatRelative(review.createdAt)}
                       </span>
                     </div>
                     {review.feedback ? (
@@ -555,52 +593,59 @@ export function AnnotationWorkbench({ data }: { data: WorkbenchData }) {
         </section>
 
         <aside className="schema-panel" aria-label="Annotation questions">
-          <div>
+          <div className="schema-panel-head">
             <p className="eyebrow">Annotation</p>
             <h2 className="display-sm">{task.schema.title}</h2>
+            <span className="schema-panel-meta">
+              Schema v{task.schemaVersionNumber} / {task.schema.fields.length}{" "}
+              questions / required {task.requiredAnnotations}
+            </span>
           </div>
-          <AnswerFields
-            schema={task.schema}
-            record={task.record}
-            answer={answer}
-            onChange={(next) => {
-              setAnswer(next);
-              setFieldErrors({});
-            }}
-            disabled={readOnly || saveState === "saving"}
-            fieldErrors={fieldErrors}
-          />
-        </aside>
-      </div>
-
-      <div className="container">
-        <div className="workbench-actions">
-          <div className="cluster">
-            <button
-              className="btn btn-secondary btn-sm"
-              type="button"
-              onClick={() => void saveNow(answer)}
+          <div className="schema-body">
+            <AnswerFields
+              schema={task.schema}
+              record={task.record}
+              answer={answer}
+              onChange={(next) => {
+                setAnswer(next);
+                setFieldErrors({});
+              }}
               disabled={readOnly || saveState === "saving"}
-            >
-              Save draft
-            </button>
-            <button
-              className="btn btn-primary btn-sm"
-              type="button"
-              onClick={openSubmit}
-              disabled={readOnly || submitting}
-            >
-              {submitting ? "Submitting..." : "Submit for review"}
-            </button>
-            <button
-              className="btn btn-ghost btn-sm"
-              type="button"
-              onClick={() => helpRef.current?.showModal()}
-            >
-              Shortcuts
-            </button>
+              fieldErrors={fieldErrors}
+            />
           </div>
-          <div className="cluster">
+          <div className="workbench-actions">
+            <div className="save-line">
+              <span className="mono tiny muted">{saveLabel}</span>
+              <span className="mono tiny muted">
+                revision {revisionRef.current}
+              </span>
+            </div>
+            <div className="annotation-actions">
+              <button
+                className="btn btn-secondary btn-sm"
+                type="button"
+                onClick={() => void saveNow(answer)}
+                disabled={readOnly || saveState === "saving"}
+              >
+                Save draft
+              </button>
+              <button
+                className="btn btn-primary btn-sm"
+                type="button"
+                onClick={openSubmit}
+                disabled={readOnly || submitting}
+              >
+                {submitting ? "Submitting..." : "Submit for review"}
+              </button>
+              <button
+                className="btn btn-ghost btn-sm"
+                type="button"
+                onClick={() => helpRef.current?.showModal()}
+              >
+                Shortcuts
+              </button>
+            </div>
             <div className="keyboard-help">
               <span>
                 <kbd>j</kbd> next
@@ -609,28 +654,40 @@ export function AnnotationWorkbench({ data }: { data: WorkbenchData }) {
                 <kbd>k</kbd> previous
               </span>
               <span>
-                <kbd>Ctrl</kbd> + <kbd>S</kbd> save
+                <kbd>Ctrl</kbd> <kbd>S</kbd> save
+              </span>
+              <span>
+                <kbd>Ctrl</kbd> <kbd>Enter</kbd> submit
               </span>
             </div>
-            <div className="cluster">
-              {previous ? (
-                <Link className="btn btn-secondary btn-sm" href={nextUrl(previous.id)}>
-                  Previous
-                </Link>
-              ) : null}
-              {next ? (
-                <Link className="btn btn-secondary btn-sm" href={nextUrl(next.id)}>
-                  Next
-                </Link>
-              ) : (
-                <Link
-                  className="btn btn-secondary btn-sm"
-                  href={`/workspaces/${data.workspaceId}/projects/${data.projectId}/tasks`}
-                >
-                  Task list
-                </Link>
-              )}
-            </div>
+          </div>
+        </aside>
+      </div>
+
+      <div className="container" style={{ paddingBottom: "2rem" }}>
+        <div className="cluster" style={{ justifyContent: "space-between" }}>
+          <p className="tiny muted">
+            Drafts autosave after a short pause. Navigation with j / k keeps the
+            current draft.
+          </p>
+          <div className="cluster">
+            {previous ? (
+              <Link className="btn btn-secondary btn-sm" href={nextUrl(previous.id)}>
+                Previous
+              </Link>
+            ) : null}
+            {next ? (
+              <Link className="btn btn-secondary btn-sm" href={nextUrl(next.id)}>
+                Next
+              </Link>
+            ) : (
+              <Link
+                className="btn btn-secondary btn-sm"
+                href={`/workspaces/${data.workspaceId}/projects/${data.projectId}/tasks`}
+              >
+                Task list
+              </Link>
+            )}
           </div>
         </div>
       </div>
