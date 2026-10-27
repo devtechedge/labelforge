@@ -68,12 +68,16 @@ export default async function WorkspaceSettingsPage({
           <span>Settings</span>
         </nav>
 
-        <div className="stack">
-          <p className="eyebrow">Workspace administration</p>
-          <h1 className="display-md">Membership, quotas, and audit</h1>
-          <p className="muted small">
-            Your roles: {roleLabels(access.roles).join(", ")}.
-          </p>
+        <div className="page-intro">
+          <div>
+            <p className="eyebrow">Workspace administration</p>
+            <h1>Membership, quotas, and audit</h1>
+            <p className="intro-meta">
+              <span>Your roles: {roleLabels(access.roles).join(", ")}</span>
+              <span>{members.length} members</span>
+              <span>{audit.total} audit events</span>
+            </p>
+          </div>
         </div>
 
         <div className="grid-2">

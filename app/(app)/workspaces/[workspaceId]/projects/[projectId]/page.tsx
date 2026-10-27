@@ -93,6 +93,7 @@ export default async function ProjectOverviewPage({
       action: "Publish release",
     },
   ];
+  const completedSteps = steps.filter((step) => step.done).length;
 
   return (
     <ProjectChrome
@@ -154,12 +155,15 @@ export default async function ProjectOverviewPage({
               style={{ width: `${(completion ?? 0) * 100}%` }}
             />
           </div>
-          <div className="meta-row">
+          <div className="cluster" style={{ gap: "0.35rem" }}>
             {Object.entries(overview.taskStatusCounts)
               .filter(([, count]) => count > 0)
               .map(([status, count]) => (
-                <span key={status}>
-                  <strong>{count}</strong>{" "}
+                <span
+                  className={`badge status-${status.toLowerCase().replaceAll("_", "-")}`}
+                  key={status}
+                >
+                  {count}{" "}
                   {TASK_STATUS_LABELS[status as keyof typeof TASK_STATUS_LABELS] ?? status}
                 </span>
               ))}
@@ -167,19 +171,33 @@ export default async function ProjectOverviewPage({
         </div>
 
         <section className="stack">
-          <p className="eyebrow">Readiness</p>
-          <div className="grid-3">
+          <div className="spread">
+            <div>
+              <p className="eyebrow">Readiness</p>
+              <h2 className="display-sm">The path to a release</h2>
+            </div>
+            <p className="mono tiny muted">
+              {completedSteps} / {steps.length} complete
+            </p>
+          </div>
+          <div className="checklist">
             {steps.map((step, index) => (
-              <div className="panel panel-pad stack" key={step.label}>
-                <span className="mono tiny muted">0{index + 1}</span>
-                <strong>{step.label}</strong>
-                <span className="badge" style={step.done ? { background: "var(--success-soft)", color: "var(--success)" } : undefined}>
-                  {step.done ? "Done" : "Open"}
+              <div
+                className="check-item"
+                data-done={step.done ? "true" : "false"}
+                key={step.label}
+              >
+                <span className="check-mark" aria-hidden="true">
+                  {step.done ? "✓" : String(index + 1).padStart(2, "0")}
                 </span>
+                <div className="check-body">
+                  <strong>{step.label}</strong>
+                  <span>{step.done ? "Complete" : "Open"}</span>
+                </div>
                 {!step.done && manager ? (
-                  <Link className="small" href={step.href}>
-                    {step.action}
-                  </Link>
+                  <Link href={step.href}>{step.action}</Link>
+                ) : step.done ? (
+                  <Link href={step.href}>View</Link>
                 ) : null}
               </div>
             ))}
@@ -200,28 +218,26 @@ export default async function ProjectOverviewPage({
               ) : null}
             </div>
             {project.dataset?.versions.length ? (
-              <div className="table-wrap">
-                <table className="data-table">
-                  <caption className="sr-only">Dataset versions</caption>
-                  <thead>
-                    <tr>
-                      <th scope="col">Version</th>
-                      <th scope="col">Records</th>
-                      <th scope="col">Format</th>
-                      <th scope="col">Imported</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {project.dataset.versions.map((version) => (
-                      <tr key={version.id}>
-                        <td className="mono">v{version.versionNumber}</td>
-                        <td>{version.recordCount.toLocaleString()}</td>
-                        <td>{version.format}</td>
-                        <td>{formatDate(version.createdAt)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="ledger">
+                {project.dataset.versions.map((version, index) => (
+                  <div className="ledger-row" key={version.id}>
+                    <span className="ledger-index">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <div className="ledger-main">
+                      <strong>
+                        v{version.versionNumber} /{" "}
+                        {version.recordCount.toLocaleString()} records
+                      </strong>
+                      <span>
+                        {version.format} / imported {formatDate(version.createdAt)}
+                      </span>
+                    </div>
+                    <span className="ledger-meta">
+                      {latestVersion?.id === version.id ? "Current" : "Stored"}
+                    </span>
+                  </div>
+                ))}
               </div>
             ) : (
               <p className="small muted">
@@ -229,9 +245,8 @@ export default async function ProjectOverviewPage({
               </p>
             )}
             {latestVersion ? (
-              <p className="tiny muted mono" style={{ overflowWrap: "anywhere" }}>
-                Current: v{latestVersion.versionNumber} · content checksum{" "}
-                {latestVersion.contentChecksum.slice(0, 16)}...
+              <p className="mono tiny muted" style={{ overflowWrap: "anywhere" }}>
+                content checksum {latestVersion.contentChecksum.slice(0, 20)}...
               </p>
             ) : null}
           </section>
@@ -251,20 +266,23 @@ export default async function ProjectOverviewPage({
             {schemas.length === 0 ? (
               <p className="small muted">No schema version has been created.</p>
             ) : (
-              <ul className="list-reset stack" style={{ gap: "0.5rem" }}>
-                {schemas.slice(0, 5).map((schema) => (
-                  <li className="schema-version" key={schema.id}>
-                    <div className="spread">
-                      <span className="mono">v{schema.versionNumber}</span>
-                      <StatusBadge status={schema.status} />
+              <div className="ledger">
+                {schemas.slice(0, 5).map((schema, index) => (
+                  <div className="ledger-row" key={schema.id}>
+                    <span className="ledger-index">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <div className="ledger-main">
+                      <strong>Schema v{schema.versionNumber}</strong>
+                      <span>
+                        {schema._count.tasks} tasks / {schema._count.annotations}{" "}
+                        annotations / {formatDate(schema.createdAt)}
+                      </span>
                     </div>
-                    <p className="tiny muted" style={{ marginTop: "0.3rem" }}>
-                      {schema._count.tasks} tasks · {schema._count.annotations} annotations ·{" "}
-                      {formatDate(schema.createdAt)}
-                    </p>
-                  </li>
+                    <StatusBadge status={schema.status} />
+                  </div>
                 ))}
-              </ul>
+              </div>
             )}
           </section>
         </div>
@@ -280,14 +298,22 @@ export default async function ProjectOverviewPage({
             {overview.activeAssignees.length === 0 ? (
               <p className="small muted">No active assignments yet.</p>
             ) : (
-              <ul className="list-reset stack" style={{ gap: "0.4rem" }}>
-                {overview.activeAssignees.map((assignee) => (
-                  <li className="member-row" key={assignee.id}>
-                    <span>{assignee.displayName}</span>
-                    <span className="mono tiny">{pluralize(assignee.count, "task")}</span>
-                  </li>
+              <div className="ledger">
+                {overview.activeAssignees.map((assignee, index) => (
+                  <div className="ledger-row" key={assignee.id}>
+                    <span className="ledger-index">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <div className="ledger-main">
+                      <strong>{assignee.displayName}</strong>
+                      <span>active assignee</span>
+                    </div>
+                    <span className="ledger-meta">
+                      {pluralize(assignee.count, "task")}
+                    </span>
+                  </div>
                 ))}
-              </ul>
+              </div>
             )}
           </section>
 
@@ -304,71 +330,81 @@ export default async function ProjectOverviewPage({
             {releases.releases.length === 0 ? (
               <p className="small muted">No release has been published.</p>
             ) : (
-              <ul className="list-reset stack" style={{ gap: "0.5rem" }}>
-                {releases.releases.slice(0, 3).map((release) => (
-                  <li className="schema-version" key={release.id}>
-                    <div className="spread">
-                      <span className="mono">Release v{release.versionNumber}</span>
-                      <span className="tiny muted">{formatDate(release.createdAt)}</span>
+              <div className="ledger">
+                {releases.releases.slice(0, 3).map((release, index) => (
+                  <div className="ledger-row" key={release.id}>
+                    <span className="ledger-index">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <div className="ledger-main">
+                      <strong>Release v{release.versionNumber}</strong>
+                      <span>
+                        {release.recordCount} records / {release.excludedCount}{" "}
+                        excluded / {formatDate(release.createdAt)}
+                      </span>
                     </div>
-                    <p className="tiny muted" style={{ marginTop: "0.3rem" }}>
-                      {release.recordCount} records · {release.excludedCount} excluded ·{" "}
-                      {release.checksum.slice(0, 12)}...
-                    </p>
-                  </li>
+                    <span className="ledger-meta">
+                      {release.checksum.slice(0, 8)}
+                    </span>
+                  </div>
                 ))}
-              </ul>
+              </div>
             )}
           </section>
         </div>
 
         {manager ? (
-          <section className="card card-pad stack-lg" id="project-settings">
-            <div>
-              <p className="eyebrow">Project administration</p>
-              <h2 className="display-sm">Settings and lifecycle</h2>
+          <details className="admin-drawer" id="project-settings">
+            <summary>
+              <div className="stack" style={{ gap: "0.2rem" }}>
+                <p className="eyebrow">Project administration</p>
+                <h2 className="display-sm">Settings and lifecycle</h2>
+              </div>
+              <span className="mono tiny muted">Open</span>
+            </summary>
+            <div className="card card-pad stack-lg">
               <p className="small muted">
                 Created {formatDateTime(project.createdAt)}. Project changes are
                 recorded in the workspace audit log.
               </p>
-            </div>
-            <UpdateProjectForm
-              workspaceId={workspaceId}
-              projectId={projectId}
-              name={project.name}
-              description={project.description}
-              annotationMode={project.annotationMode}
-              annotationsPerTask={project.annotationsPerTask}
-              tasksExist={totalTasks > 0}
-            />
-            <div className="spread rule" style={{ paddingTop: "1rem" }}>
-              <div>
-                <p className="field-label">Archive or restore</p>
-                <p className="small muted">
-                  Archiving is reversible and does not delete data.
-                </p>
-              </div>
-              <ArchiveProjectForm
+              <UpdateProjectForm
                 workspaceId={workspaceId}
                 projectId={projectId}
-                archived={project.status === "ARCHIVED"}
+                name={project.name}
+                description={project.description}
+                annotationMode={project.annotationMode}
+                annotationsPerTask={project.annotationsPerTask}
+                tasksExist={totalTasks > 0}
               />
-            </div>
-            {owner ? (
-              <div className="rule" style={{ paddingTop: "1rem" }}>
-                <p className="field-label">Permanent deletion</p>
-                <p className="small muted" style={{ marginBottom: "0.8rem" }}>
-                  Deletes imported records, annotations, reviews, adjudications,
-                  and releases. This cannot be undone.
-                </p>
-                <DeleteProjectForm
+              <div className="spread rule" style={{ paddingTop: "1rem" }}>
+                <div>
+                  <p className="field-label">Archive or restore</p>
+                  <p className="small muted">
+                    Archiving is reversible and does not delete data.
+                  </p>
+                </div>
+                <ArchiveProjectForm
                   workspaceId={workspaceId}
                   projectId={projectId}
-                  name={project.name}
+                  archived={project.status === "ARCHIVED"}
                 />
               </div>
-            ) : null}
-          </section>
+              {owner ? (
+                <div className="rule" style={{ paddingTop: "1rem" }}>
+                  <p className="field-label">Permanent deletion</p>
+                  <p className="small muted" style={{ marginBottom: "0.8rem" }}>
+                    Deletes imported records, annotations, reviews, adjudications,
+                    and releases. This cannot be undone.
+                  </p>
+                  <DeleteProjectForm
+                    workspaceId={workspaceId}
+                    projectId={projectId}
+                    name={project.name}
+                  />
+                </div>
+              ) : null}
+            </div>
+          </details>
         ) : null}
       </div>
     </ProjectChrome>

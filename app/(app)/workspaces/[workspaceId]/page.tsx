@@ -34,40 +34,39 @@ export default async function WorkspacePage({
   return (
     <main id="main-content" className="page">
       <div className="container stack-lg">
-        <div className="stack">
-          <nav className="breadcrumbs" aria-label="Breadcrumb">
-            <Link href="/workspaces">Workspaces</Link>
-            <span className="sep">/</span>
-            <span>{access.workspace.name}</span>
-          </nav>
-          <div className="spread">
-            <div className="stack">
-              <p className="eyebrow">Workspace / {access.workspace.slug}</p>
-              <h1 className="display-md">{access.workspace.name}</h1>
-              <div className="role-pills">
-                {roleLabels(access.roles).map((role) => (
-                  <span className="role-pill" key={role}>
-                    {role}
-                  </span>
-                ))}
-              </div>
+        <nav className="breadcrumbs" aria-label="Breadcrumb">
+          <Link href="/workspaces">Workspaces</Link>
+          <span className="sep">/</span>
+          <span>{access.workspace.name}</span>
+        </nav>
+
+        <div className="page-intro">
+          <div>
+            <p className="eyebrow">Workspace / {access.workspace.slug}</p>
+            <h1>{access.workspace.name}</h1>
+            <div className="role-pills">
+              {roleLabels(access.roles).map((role) => (
+                <span className="role-pill" key={role}>
+                  {role}
+                </span>
+              ))}
             </div>
-            <div className="cluster">
+          </div>
+          <div className="intro-actions">
+            <Link
+              className="btn btn-secondary"
+              href={`/workspaces/${workspaceId}/settings`}
+            >
+              Workspace settings
+            </Link>
+            {isManager(access.roles) ? (
               <Link
-                className="btn btn-secondary"
-                href={`/workspaces/${workspaceId}/settings`}
+                className="btn btn-primary"
+                href={`/workspaces/${workspaceId}/projects/new`}
               >
-                Workspace settings
+                New project
               </Link>
-              {isManager(access.roles) ? (
-                <Link
-                  className="btn btn-primary"
-                  href={`/workspaces/${workspaceId}/projects/new`}
-                >
-                  New project
-                </Link>
-              ) : null}
-            </div>
+            ) : null}
           </div>
         </div>
 
@@ -92,8 +91,8 @@ export default async function WorkspacePage({
               <p className="eyebrow">Project catalogue</p>
               <h2 className="display-sm">Current work</h2>
             </div>
-            <p className="small muted">
-              Owner: {overview.workspace.owner.displayName} · Opened{" "}
+            <p className="mono tiny muted">
+              Owner: {overview.workspace.owner.displayName} / Opened{" "}
               {formatDate(overview.workspace.createdAt)}
             </p>
           </div>
@@ -115,7 +114,7 @@ export default async function WorkspacePage({
             />
           ) : (
             <div className="grid-2">
-              {overview.projects.map((project) => {
+              {overview.projects.map((project, index) => {
                 const totalTasks = project._count.tasks;
                 const accepted = (project.statusCounts.ACCEPTED ?? 0) + (project.statusCounts.RESOLVED ?? 0);
                 const completion = totalTasks === 0 ? null : accepted / totalTasks;
@@ -128,7 +127,9 @@ export default async function WorkspacePage({
                   >
                     <div className="spread">
                       <div>
-                        <p className="eyebrow">Project</p>
+                        <p className="eyebrow">
+                          Project / {String(index + 1).padStart(2, "0")}
+                        </p>
                         <h2>{project.name}</h2>
                       </div>
                       <StatusBadge status={project.status === "ARCHIVED" ? "ARCHIVED" : "ACTIVE"} />
@@ -137,34 +138,49 @@ export default async function WorkspacePage({
                       {project.description || "No description yet."}
                     </p>
                     <div className="meta-row">
-                      <span>{project.annotationMode === "MULTI" ? "Multi-annotator" : "Single annotator"}</span>
+                      <span>
+                        {project.annotationMode === "MULTI"
+                          ? "Multi-annotator"
+                          : "Single annotator"}
+                      </span>
                       <span>{pluralize(totalTasks, "task")}</span>
                       <span>{project._count.schemaVersions} schemas</span>
-                      <span>{project._count.releases} releases</span>
+                      <span>
+                        {project._count.releases} release
+                        {project._count.releases === 1 ? "" : "s"}
+                      </span>
                       {project.myAssignedCount > 0 ? (
                         <span>
                           <strong>{project.myAssignedCount}</strong> for you
                         </span>
                       ) : null}
                     </div>
-                    <div className="stack" style={{ gap: "0.35rem" }}>
+                    <div className="stack" style={{ gap: "0.4rem" }}>
+                      <div className="spread" style={{ gap: "0.5rem" }}>
+                        <span className="mono tiny muted">Completion</span>
+                        <span className="mono tiny">
+                          {completion === null
+                            ? "Not started"
+                            : `${Math.round(completion * 100)}% / ${accepted} of ${totalTasks}`}
+                        </span>
+                      </div>
                       <div className="progress-track">
                         <div
                           className="progress-fill"
                           style={{ width: `${(completion ?? 0) * 100}%` }}
                         />
                       </div>
-                      <p className="tiny muted">
-                        {completion === null
-                          ? "No tasks generated yet."
-                          : `${accepted} of ${totalTasks} tasks accepted or resolved.`}
-                      </p>
                     </div>
-                    <p className="tiny muted">
-                      {latestVersion
-                        ? `Dataset v${latestVersion.versionNumber} · ${latestVersion.recordCount} records · ${formatDate(latestVersion.createdAt)}`
-                        : "No dataset committed yet."}
-                    </p>
+                    <div className="spread" style={{ gap: "0.5rem" }}>
+                      <p className="tiny muted">
+                        {latestVersion
+                          ? `Dataset v${latestVersion.versionNumber} / ${latestVersion.recordCount} records / ${formatDate(latestVersion.createdAt)}`
+                          : "No dataset committed yet."}
+                      </p>
+                      <span className="mono tiny" aria-hidden="true">
+                        →
+                      </span>
+                    </div>
                   </Link>
                 );
               })}
@@ -173,9 +189,9 @@ export default async function WorkspacePage({
         </section>
 
         <div className="panel panel-pad spread">
-          <div>
+          <div className="stack" style={{ gap: "0.3rem" }}>
             <p className="eyebrow">Governance</p>
-            <p className="small">
+            <p className="small muted">
               {isOwner(access.roles)
                 ? "You own this workspace. Membership, quotas, audit events, and deletion controls are in settings."
                 : "Membership and audit controls are managed by the workspace owner."}

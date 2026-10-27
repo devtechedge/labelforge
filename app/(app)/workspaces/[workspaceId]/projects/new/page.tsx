@@ -41,14 +41,21 @@ export default async function NewProjectPage({
           <span className="sep">/</span>
           <span>New project</span>
         </nav>
-        <div className="stack">
-          <p className="eyebrow">Create</p>
-          <h1 className="display-md">A project holds one dataset lineage</h1>
-          <p className="lede small">
-            Start with an empty dataset container. Import a CSV or JSONL file
-            next, then publish a schema before generating tasks.
-          </p>
+        <div className="page-intro">
+          <div>
+            <p className="eyebrow">Create / {access.workspace.name}</p>
+            <h1>A project holds one dataset lineage</h1>
+            <p className="intro-meta">
+              <span>Empty dataset container</span>
+              <span>Import next</span>
+              <span>Schema before tasks</span>
+            </p>
+          </div>
         </div>
+        <p className="section-lede">
+          Start with an empty dataset container. Import a CSV or JSONL file next,
+          then publish a schema before generating tasks.
+        </p>
         <div className="card card-pad">
           <CreateProjectForm workspaceId={workspaceId} />
         </div>

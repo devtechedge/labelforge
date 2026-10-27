@@ -19,12 +19,16 @@ export default async function WorkspacesPage() {
   return (
     <main id="main-content" className="page">
       <div className="container stack-lg">
-        <div className="spread">
-          <div className="stack">
+        <div className="page-intro">
+          <div>
             <p className="eyebrow">Your account</p>
-            <h1 className="display-md">Workspaces</h1>
-            <p className="muted small">
-              Signed in as {user.displayName} ({user.email}).
+            <h1>Workspaces</h1>
+            <p className="intro-meta">
+              <span>{user.displayName}</span>
+              <span>{user.email}</span>
+              <span>
+                {workspaces.length} workspace{workspaces.length === 1 ? "" : "s"}
+              </span>
             </p>
           </div>
         </div>
@@ -43,39 +47,47 @@ export default async function WorkspacesPage() {
           </div>
         ) : (
           <>
-            <div className="grid-2">
-              {workspaces.map((item) => (
+            <div className="workspace-list">
+              {workspaces.map((item, index) => (
                 <Link
-                  className="workspace-card"
+                  className="workspace-card workspace-row"
                   href={`/workspaces/${item.workspace.id}`}
                   key={item.workspace.id}
                 >
-                  <div className="spread">
-                    <div>
-                      <p className="eyebrow">Workspace</p>
-                      <h2>{item.workspace.name}</h2>
+                  <div className="workspace-identity">
+                    <p className="eyebrow">
+                      Workspace / {String(index + 1).padStart(2, "0")}
+                    </p>
+                    <h2>{item.workspace.name}</h2>
+                    <div className="role-pills">
+                      {roleLabels(item.roles).map((role) => (
+                        <span className="role-pill" key={role}>
+                          {role}
+                        </span>
+                      ))}
                     </div>
-                    <span className="mono tiny">{item.workspace.slug}</span>
+                    <p className="mono tiny muted">
+                      {item.workspace.slug} / opened{" "}
+                      {formatDate(item.workspace.createdAt)}
+                    </p>
                   </div>
-                  <div className="role-pills">
-                    {roleLabels(item.roles).map((role) => (
-                      <span className="role-pill" key={role}>
-                        {role}
-                      </span>
-                    ))}
+                  <div className="workspace-stats">
+                    <div className="workspace-stat">
+                      <strong>{item.projectCount}</strong>
+                      <span>Projects</span>
+                    </div>
+                    <div className="workspace-stat">
+                      <strong>{item.memberCount}</strong>
+                      <span>Members</span>
+                    </div>
+                    <div className="workspace-stat">
+                      <strong>{item.assignedTaskCount}</strong>
+                      <span>Assigned to you</span>
+                    </div>
                   </div>
-                  <div className="meta-row">
-                    <span>
-                      <strong>{item.projectCount}</strong> projects
-                    </span>
-                    <span>
-                      <strong>{item.memberCount}</strong> members
-                    </span>
-                    <span>
-                      <strong>{item.assignedTaskCount}</strong> tasks assigned to you
-                    </span>
-                    <span>Opened {formatDate(item.workspace.createdAt)}</span>
-                  </div>
+                  <span className="workspace-open">
+                    Open <span aria-hidden="true">→</span>
+                  </span>
                 </Link>
               ))}
             </div>
@@ -90,9 +102,28 @@ export default async function WorkspacesPage() {
                   reviews and adjudicate. Annotators work only on assigned tasks.
                   A member can hold more than one role.
                 </p>
+                <div className="spec-list" style={{ marginTop: "0.75rem" }}>
+                  <div className="spec-row">
+                    <span>Owner</span>
+                    <strong>Membership / deletion</strong>
+                  </div>
+                  <div className="spec-row">
+                    <span>Manager</span>
+                    <strong>Projects / releases</strong>
+                  </div>
+                  <div className="spec-row">
+                    <span>Reviewer</span>
+                    <strong>Decisions / adjudication</strong>
+                  </div>
+                  <div className="spec-row">
+                    <span>Annotator</span>
+                    <strong>Assigned tasks</strong>
+                  </div>
+                </div>
               </div>
               <div className="card card-pad stack">
                 <p className="eyebrow">Create another workspace</p>
+                <h2 className="display-sm">Separate the work</h2>
                 <CreateWorkspaceForm />
               </div>
             </div>
